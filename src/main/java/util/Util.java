@@ -56,7 +56,7 @@ public class Util {
     public static void merge(ArrayList<String> files, String dest, HashMap contentMap)
             throws IOException, DocumentException, ParseException {
 
-        Document document = new Document();
+        Document document = new Document(PageSize.A4, 40, 40, 60, 60);
         PdfCopy copy = new PdfCopy(document, new FileOutputStream(dest));
         document.open();
         int pageNum = 4;
@@ -73,31 +73,9 @@ public class Util {
                 copy.addDocument(reader);
                 copy.freeReader(reader);
                 reader.close();
- //               File f = new File(file);
-                // f.delete();
             }
         }
         document.close();
-        if(contentMap != null) {
-            PdfReader readerFinal = new PdfReader("tmp/helper.pdf");
-            int totalPages = readerFinal.getNumberOfPages();
-            PdfStamper stamp = new PdfStamper(readerFinal, new FileOutputStream("tmp/helper2.pdf"));
-            PdfContentByte over;
-            for (int i = 1; i <= totalPages; i++) {
-                over = stamp.getOverContent(i);
-                DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
-                ColumnText.showTextAligned(over, Element.ALIGN_LEFT, new Phrase("ETL"), 35, 35, 0);
-                ColumnText.showTextAligned(over, Element.ALIGN_CENTER,
-                        new Phrase("Copyright 2018 \u00a9 ROTAX"), PageSize.A4.getWidth() / 2, 35, 0);
-                ColumnText.showTextAligned(over, Element.ALIGN_RIGHT,
-                        new Phrase("Page: " + String.valueOf(i+3)), PageSize.A4.getWidth() - 35, 35, 0);
-                ColumnText.showTextAligned(over, Element.ALIGN_CENTER,
-                        new Phrase("This printed Version is not subject to an updating service - " + df.format(new Date()),
-                                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)),
-                        PageSize.A4.getWidth() / 2, 25, 0);
-            }
-            stamp.close();
-        }
     }
 
     public static void removeTmpFiles(){
@@ -111,6 +89,7 @@ public class Util {
         com.itextpdf.kernel.pdf.PdfWriter writer = new PdfWriter(dest);
         PdfDocument pdf = new PdfDocument(writer);
         com.itextpdf.layout.Document document = new com.itextpdf.layout.Document(pdf);
+        document.setMargins(50, 50, 50, 50);
         return document;
     }
 
@@ -126,7 +105,32 @@ public class Util {
     }
 
     public static String parseDate(String changeno) {
-        return changeno.substring(5, 7) + "." + changeno.substring(3, 5) + "." + changeno.substring(1, 3);
+        String year;
+        if(Integer.valueOf(changeno.substring(1,3)) > 70){
+            year = "19";
+        } else year = "20";
+        return changeno.substring(5, 7) + "." + changeno.substring(3, 5) + "." + year + changeno.substring(1, 3);
     }
 
+    public static void stampPageNo() throws IOException, DocumentException {
+        PdfReader readerFinal = new PdfReader("tmp/helper2.pdf");
+        int totalPages = readerFinal.getNumberOfPages();
+        PdfStamper stamp = new PdfStamper(readerFinal, new FileOutputStream("tmp/final.pdf"));
+        PdfContentByte over;
+        for (int i = 1; i <= totalPages; i++) {
+            if(i!=1) {
+                over = stamp.getOverContent(i);
+                DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
+                ColumnText.showTextAligned(over, Element.ALIGN_LEFT, new Phrase("ETL"), 50, 40, 0);
+                ColumnText.showTextAligned(over, Element.ALIGN_CENTER,
+                        new Phrase("Copyright 2018 \u00a9 ROTAX"), PageSize.A4.getWidth() / 2, 40, 0);
+                ColumnText.showTextAligned(over, Element.ALIGN_RIGHT,
+                        new Phrase("Page: " + i), PageSize.A4.getWidth() - 50, 40, 0);
+                ColumnText.showTextAligned(over, Element.ALIGN_CENTER,
+                        new Phrase("This printed Version is not subject to an updating service - " + df.format(new Date()),
+                                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)),PageSize.A4.getWidth() / 2, 30, 0);
+            }
+        }
+        stamp.close();
+    }
 }

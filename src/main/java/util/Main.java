@@ -32,9 +32,10 @@ public class Main {
         CreateIntro ci = new CreateIntro();
         pdfList.clear();
         pdfList.add(ci.createIntro(etl));
-        pdfList.add("tmp/helper2.pdf");
+        pdfList.add("tmp/helper.pdf");
+        Util.merge(pdfList,"tmp/helper2.pdf", null);
         Util.setTmpFiles("tmp/helper2.pdf");
-        Util.merge(pdfList,"tmp/final.pdf", null);
+        Util.stampPageNo();
         Util.removeTmpFiles();
     }
 }

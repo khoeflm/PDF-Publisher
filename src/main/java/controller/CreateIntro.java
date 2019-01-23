@@ -1,6 +1,7 @@
 package controller;
 
 import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.TextAlignment;
@@ -50,7 +51,7 @@ public class CreateIntro {
 
     private String loadCover(String cover) {
 
-        return "tmp/ETL1727_00-COVER.pdf";
+        return "raw/ETL1727_00-COVER.pdf";
     }
 
     private String loadTOR(ETL etl) throws FileNotFoundException {
@@ -65,27 +66,51 @@ public class CreateIntro {
         document.add(paragraph);
 
         // Creating a table
-        float[] pointColumnWidths = {70F, 70F, 70F, 310F};
+        float[] pointColumnWidths = {70F, 70F, 70F, 25F, 70F, 310F};
         Table table = new Table(pointColumnWidths);        // Add elements to the list
-
+        table.setFontSize(10);
         table.addHeaderCell(Util.setCell("CHANGE", true, TextAlignment.CENTER, true));
         table.addHeaderCell(Util.setCell("DATE", true, TextAlignment.CENTER, true));
         table.addHeaderCell(Util.setCell("CHAPTER", true, TextAlignment.CENTER, true));
+        table.addHeaderCell(Util.setCell("#", true, TextAlignment.CENTER, true));
+        table.addHeaderCell(Util.setCell("PART#", true, TextAlignment.CENTER, true));
         table.addHeaderCell(Util.setCell("DESCRIPTION", true, TextAlignment.LEFT, true));
 
         boolean condition = false;
-        for (ETLRow row : etl.getEtl()){
+
+
+        String oldChangeNo = "";
+        Cell c1 = null, c2 = null, c3 = null, c4 = null, c5 = null, c6 = null;
+        for (ETLRow row : etl.getSortedChangeNoList()){
             if (row.getChangeno() != null && !row.getChangeno().isEmpty()){
-                table.addCell(Util.setCell(String.valueOf(row.getChangeno()), condition, TextAlignment.CENTER, false));
-                String d = Util.parseDate(row.getChangeno());
-                table.addCell(Util.setCell(d, condition, TextAlignment.CENTER, false));
-                table.addCell(Util.setCell(row.getChapter().substring(0,2), condition, TextAlignment.CENTER, false));
-                int l = String.valueOf(row.getNo()).length();
-                String pos = String.valueOf(row.getNo()).substring(l-2,l);
-                table.addCell(Util.setCell(pos + " - "+row.getPartno()+" - "+row.getDescription(),
-                        condition, TextAlignment.LEFT, false));
-                condition = !condition;
+                if(!row.getChangeno().equals(oldChangeNo)) {
+                    if(oldChangeNo != "") {
+                        table.addCell(c1);
+                        table.addCell(c2);
+                        table.addCell(c3);
+                        table.addCell(c4);
+                        table.addCell(c5);
+                        table.addCell(c6);
+                    }
+                    c1 = Util.setCell(String.valueOf(row.getChangeno()), condition, TextAlignment.CENTER, false);
+                    String d = Util.parseDate(row.getChangeno());
+                    c2 = Util.setCell(d, condition, TextAlignment.CENTER, false);
+                    c3 = Util.setCell(row.getChapter().substring(0, 2).replaceFirst("^0+(?!$)", ""),
+                            condition, TextAlignment.CENTER, false);
+                    int l = String.valueOf(row.getNo()).length();
+                    String pos = String.valueOf(row.getNo()).substring(l - 2, l);
+                    c4 = Util.setCell(pos.replaceFirst("^0+(?!$)", ""),
+                            condition, TextAlignment.CENTER, false);
+                    c5 = Util.setCell(row.getPartno(), condition, TextAlignment.CENTER, false);
+                    c6 = Util.setCell(row.getDescription(), condition, TextAlignment.LEFT, false);
+                    condition = !condition;
+                    oldChangeNo = row.getChangeno();
+                }else{
+
+
+                }
             }
+
         }
 
         document.add(table);
@@ -101,14 +126,15 @@ public class CreateIntro {
         Document document = Util.createPdf(dest);
         // Creating a Paragraph
         Paragraph paragraph = new Paragraph("Table of Content");
-        paragraph.setBold();
         paragraph.setFontSize(14);
+        paragraph.setBold();
+        paragraph.setTextAlignment(TextAlignment.CENTER);
         document.add(paragraph);
 
         // Creating a table
-        float[] pointColumnWidths = {35F, 380F, 35F};
+        float[] pointColumnWidths = {35F, 450F, 35F};
         Table table = new Table(pointColumnWidths);        // Add elements to the list
-
+        table.setFontSize(10);
         table.addHeaderCell(Util.setCell("CHAPTER", true, TextAlignment.CENTER, true));
         table.addHeaderCell(Util.setCell("DESCRIPTION", true, TextAlignment.LEFT, true).setPaddingLeft(40));
         table.addHeaderCell(Util.setCell("PAGE", true, TextAlignment.RIGHT, true));
@@ -124,11 +150,7 @@ public class CreateIntro {
                 condition = !condition;
             }
         }
-
-        // Adding paragraph to the document
-        // Adding list to the document
         document.add(table);
-        // Closing the document
         document.close();
         return dest;
 

@@ -1,9 +1,10 @@
 package model;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * PDF Publisher
@@ -23,18 +24,6 @@ public class ETL {
             String line = scanner.next();
             this.etl.add(new ETLRow(line));
         }
-/*       try(BufferedReader in = new BufferedReader(new FileReader(file))) {
-            String str;
-            while((str = in.readLine()) != null) {
-                str = removeNul(str);
-                if (!str.isEmpty()) {
-                    this.etl.add(new ETLRow(str));
-                }
-            }
-        }
-        catch (IOException e) {
-            System.out.println("File Read Error");
-        }*/
     }
 
     private String removeNul(String s) {
@@ -62,5 +51,42 @@ public class ETL {
 
     public HashMap getContentMap() {
         return contentMap;
+    }
+
+    public ArrayList<ETLRow> getSortedChangeNoList() {
+        ArrayList<ETLRow> changeNoList = new ArrayList<>();
+        for(ETLRow e : etl) {
+            if (!e.getChangeno().isEmpty()) {
+                changeNoList.add(e);
+            }
+        }
+        changeNoList.sort(new Comparator<ETLRow>() {
+            @Override
+            public int compare(ETLRow o1, ETLRow o2) {
+
+                try {
+                    String year1, year2;
+                    String changeno1 = o1.getChangeno();
+                    String changeno2 = o2.getChangeno();
+                    if(Integer.valueOf(changeno1.substring(1,3)) > 70){
+                        year1 = "19";
+                    } else year1 = "20";
+                    if(Integer.valueOf(changeno2.substring(1,3)) > 70){
+                        year2 = "19";
+                    } else year2 = "20";
+                    String date1 = changeno1.substring(5, 7) + "." + changeno1.substring(3, 5) + "." + year1 + changeno1.substring(1, 3);
+                    String date2 = changeno2.substring(5, 7) + "." + changeno2.substring(3, 5) + "." + year2 + changeno2.substring(1, 3);
+
+                    Date d1 = new SimpleDateFormat("dd.MM.yyyy").parse(date1);
+                    Date d2 = new SimpleDateFormat("dd.MM.yyyy").parse(date2);
+
+                    return d1.compareTo(d2);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                return 0;
+            }
+        });
+        return changeNoList;
     }
 }

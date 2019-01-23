@@ -9,6 +9,8 @@ public class ETLRow {
     private char etkz;
     private String partno;
     private String description;
+    private String descriptionLine2;
+    private String descriptionLine3;
     private double qty;
     private String changeno;
     private String chapter;
@@ -23,6 +25,8 @@ public class ETLRow {
             setPartno(tokens[2]);
             // Beschreibung
             setDescription(tokens[3]);
+            setDescriptionLine2(tokens[4]);
+            setDescriptionLine3(tokens[5]);
             // Menge
             tokens[6] = tokens[6].replace(',','.');
             setQty(Double.valueOf(tokens[6]));
@@ -39,6 +43,26 @@ public class ETLRow {
                 setChangeno(tokens[11]);
             } else setChangeno("");
         }
+    }
+
+    public String getDescriptionLine2() {
+        return descriptionLine2;
+    }
+
+    public void setDescriptionLine2(String descriptionLine2) {
+        this.descriptionLine2 = descriptionLine2;
+    }
+
+    public String getDescriptionLine3() {
+        return descriptionLine3;
+    }
+
+    public void setDescriptionLine3(String descriptionLine3) {
+        this.descriptionLine3 = descriptionLine3;
+    }
+
+    public void setQty(double qty) {
+        this.qty = qty;
     }
 
     public int getNo() {
