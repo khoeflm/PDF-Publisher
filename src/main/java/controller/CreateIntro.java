@@ -11,6 +11,7 @@ import util.Util;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 
 /**
@@ -19,9 +20,10 @@ import java.util.ArrayList;
  */
 public class CreateIntro {
 
-    public String createIntro(ETL etl){
+    public String createIntro(ETL etl) throws ParseException {
         ArrayList<String> pdfList = new ArrayList<>();
         String dest = "tmp/intro.pdf";
+        Util.setTmpFiles(dest);
         String cover = null;
         for (ETLRow row : etl.getEtl()){
             if (row.getNo()== 10 && row.getItemType() == 'D'){
@@ -34,7 +36,7 @@ public class CreateIntro {
             pdfList.add(loadCover(cover));
             pdfList.add(loadTOR(etl));
             pdfList.add(loadTOC(etl));
-            Util.merge(pdfList, dest);
+            Util.merge(pdfList, dest, null);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (DocumentException e) {
@@ -53,6 +55,7 @@ public class CreateIntro {
 
     private String loadTOR(ETL etl) throws FileNotFoundException {
         String dest = "tmp/tor.pdf";
+        Util.setTmpFiles(dest);
         Document document = Util.createPdf(dest);
         // Creating a Paragraph
         Paragraph paragraph = new Paragraph("Table of Revision");
@@ -94,6 +97,7 @@ public class CreateIntro {
 
     private String loadTOC(ETL etl) throws FileNotFoundException {
         String dest = "tmp/toc.pdf";
+        Util.setTmpFiles(dest);
         Document document = Util.createPdf(dest);
         // Creating a Paragraph
         Paragraph paragraph = new Paragraph("Table of Content");
@@ -106,7 +110,7 @@ public class CreateIntro {
         Table table = new Table(pointColumnWidths);        // Add elements to the list
 
         table.addHeaderCell(Util.setCell("CHAPTER", true, TextAlignment.CENTER, true));
-        table.addHeaderCell(Util.setCell("DESCRIPTION", true, TextAlignment.LEFT, true)).setPaddingLeft(40);
+        table.addHeaderCell(Util.setCell("DESCRIPTION", true, TextAlignment.LEFT, true).setPaddingLeft(40));
         table.addHeaderCell(Util.setCell("PAGE", true, TextAlignment.RIGHT, true));
 
         boolean condition = false;
@@ -115,8 +119,9 @@ public class CreateIntro {
             if (row.getNo()%100 == 0 && row.getItemType() == 'T'){
                 int l = String.valueOf(row.getNo()).length();
                 table.addCell(Util.setCell(String.valueOf(row.getNo()).substring(0,l-2), condition, TextAlignment.RIGHT, false));
-                table.addCell(Util.setCell(row.getPartno(), condition, TextAlignment.LEFT, false)).setPaddingLeft(40);
-                table.addCell(Util.setCell("", condition, TextAlignment.RIGHT, false));
+                table.addCell(Util.setCell(row.getPartno(), condition, TextAlignment.LEFT, false).setPaddingLeft(40));
+                table.addCell(Util.setCell(etl.getContentMap().get(String.valueOf(row.getNo())).toString(), condition, TextAlignment.RIGHT, false));
+                condition = !condition;
             }
         }
 

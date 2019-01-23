@@ -2,6 +2,7 @@ package model;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 /**
@@ -10,8 +11,11 @@ import java.util.Scanner;
  */
 public class ETL {
     ArrayList<ETLRow> etl;
+    HashMap<String, String> contentMap;
+
 
     public ETL(String file) throws FileNotFoundException {
+        this.contentMap = new HashMap<>();
         etl = new ArrayList<>();
         Scanner scanner = new Scanner(new File(file));
         scanner.useDelimiter("\r\n");
@@ -54,5 +58,9 @@ public class ETL {
             if (row.getNo()== index) list.add(row);
         }
         return list;
+    }
+
+    public HashMap getContentMap() {
+        return contentMap;
     }
 }

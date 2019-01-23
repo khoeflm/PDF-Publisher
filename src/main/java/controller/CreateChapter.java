@@ -23,6 +23,7 @@ public class CreateChapter {
         //lade Baugruppenbild
         if (etl.size() > 0 && etl.get(0) != null) {
             String dest = "tmp/"+etl.get(0).getNo()+".pdf";
+            Util.setTmpFiles(dest);
             Document doc = Util.createPdf(dest);
 
             int index = etl.get(0).getPartno().indexOf('-');
@@ -62,10 +63,8 @@ public class CreateChapter {
                     p1.setFontSize(14);
                     doc.add(p1);
                     doc.add(image);
-                    // Creating an Area Break
-                    AreaBreak aB = new AreaBreak();
                     // Adding area break to the PDF
-                    doc.add(aB);
+                    doc.add(new AreaBreak());
                     doc.add(p1);
                 }
         // Table
@@ -100,9 +99,14 @@ public class CreateChapter {
                 }
             }
             boolean b = true;
+            int i = doc.getPdfDocument().getNumberOfPages();
 
             // Adding Table to document
             doc.add(table);
+
+            if(doc.getPdfDocument().getNumberOfPages() % 2 != 0){
+                doc.add(new AreaBreak());
+            }
 
             // Closing the document
             doc.close();
