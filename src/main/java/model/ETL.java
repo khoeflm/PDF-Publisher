@@ -11,26 +11,35 @@ import java.util.*;
  * Created by khoef on 21.01.2019.
  */
 public class ETL {
+    String etlNo;
     ArrayList<ETLRow> etl;
     HashMap<String, String> contentMap;
 
 
     public ETL(String file) throws FileNotFoundException {
+        int i = file.lastIndexOf("\\");
+        etlNo = file.substring(i+1,i+8).toUpperCase();
         this.contentMap = new HashMap<>();
         etl = new ArrayList<>();
         Scanner scanner = new Scanner(new File(file));
         scanner.useDelimiter("\r\n");
         while (scanner.hasNext()) {
             String line = scanner.next();
+            line = removeNul(line);
             this.etl.add(new ETLRow(line));
         }
     }
 
     private String removeNul(String s) {
         s = s.trim();
+        s = s.replaceAll("\uFEFF","");
         s = s.replaceAll("\u0000","");
         s = s.replaceAll(",", ".");
         return s;
+    }
+
+    public String getEtlNo() {
+        return etlNo;
     }
 
     public ArrayList<ETLRow> getEtl() {
@@ -79,8 +88,7 @@ public class ETL {
 
                     Date d1 = new SimpleDateFormat("dd.MM.yyyy").parse(date1);
                     Date d2 = new SimpleDateFormat("dd.MM.yyyy").parse(date2);
-
-                    return d1.compareTo(d2);
+                    return d2.compareTo(d1);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }

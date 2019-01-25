@@ -10,7 +10,6 @@ public class ETLRow {
     private String partno;
     private String description;
     private String descriptionLine2;
-    private String descriptionLine3;
     private double qty;
     private String changeno;
     private String chapter;
@@ -20,27 +19,27 @@ public class ETLRow {
         String[] tokens = str.split("\\|");
         if (tokens.length >5) {
             // Positionsnummer
-            setNo(Integer.parseInt(tokens[1]));
+            setNo(Integer.parseInt(tokens[0]));
             // Teilenummer(Material)
-            setPartno(tokens[2]);
+            setPartno(tokens[1]);
             // Beschreibung
-            setDescription(tokens[3]);
-            setDescriptionLine2(tokens[4]);
-            setDescriptionLine3(tokens[5]);
+            setDescription(tokens[2]);
+            setDescriptionLine2(tokens[3]);
+            setDescriptionLine2(getDescriptionLine2().replace("U+0085", "\r"));
             // Menge
-            tokens[6] = tokens[6].replace(',','.');
-            setQty(Double.valueOf(tokens[6]));
+            tokens[4] = tokens[4].replace(',','.');
+            setQty(Double.valueOf(tokens[4]));
             // Kapitel
-            setChapter(tokens[8]);
+            setChapter(tokens[6]);
             // Positionstyp
-            setItemType(tokens[9].charAt(1));
+            setItemType(tokens[7].charAt(0));
             // Ersatzteilkennzeichen
-            if(tokens.length > 10 && tokens[10].length() >= 1) {
-                setEtkz(tokens[10].charAt(0));
+            if(tokens.length > 8 && tokens[8].length() >= 1) {
+                setEtkz(tokens[8].charAt(0));
             }
             // Änderungsnummer
-            if(tokens.length > 11) {
-                setChangeno(tokens[11]);
+            if(tokens.length > 9) {
+                setChangeno(tokens[9]);
             } else setChangeno("");
         }
     }
@@ -51,14 +50,6 @@ public class ETLRow {
 
     public void setDescriptionLine2(String descriptionLine2) {
         this.descriptionLine2 = descriptionLine2;
-    }
-
-    public String getDescriptionLine3() {
-        return descriptionLine3;
-    }
-
-    public void setDescriptionLine3(String descriptionLine3) {
-        this.descriptionLine3 = descriptionLine3;
     }
 
     public void setQty(double qty) {

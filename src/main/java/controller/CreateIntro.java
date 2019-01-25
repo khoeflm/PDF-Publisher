@@ -1,17 +1,22 @@
 package controller;
 
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.TextAlignment;
 import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.PageSize;
 import model.ETL;
 import model.ETLRow;
 import util.Util;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 
@@ -24,12 +29,11 @@ public class CreateIntro {
     public String createIntro(ETL etl) throws ParseException {
         ArrayList<String> pdfList = new ArrayList<>();
         String dest = "tmp/intro.pdf";
-        Util.setTmpFiles(dest);
         String cover = null;
         for (ETLRow row : etl.getEtl()){
             if (row.getNo()== 10 && row.getItemType() == 'D'){
-                int i = row.getPartno().indexOf(" "); 
-                cover = row.getPartno().substring(0, i-1);
+                int i = row.getDescriptionLine2().lastIndexOf("\\");
+                cover = row.getDescriptionLine2().substring(i+1, row.getDescriptionLine2().length());
                 int x = 1;
             }
         }
@@ -49,14 +53,31 @@ public class CreateIntro {
 
     }
 
-    private String loadCover(String cover) {
+    private String loadCover(String coverName) throws FileNotFoundException, MalformedURLException {
+        String fileformat = coverName.substring(coverName.length()-3,coverName.length());
+        if(fileformat.equalsIgnoreCase("pdf")) {
+            return "raw/" + coverName;
+        } else if(fileformat.equalsIgnoreCase("jpg")){
+            String dest = "tmp/" + "COVER.pdf";
+            Document doc = Util.createPdf(dest);
+//            doc.setMargins(0,0,0,0);
+            String imgFile = "raw/"+coverName;
+            ImageData data = ImageDataFactory.create(imgFile);
+            Image image = new Image(data);
+            image.scaleToFit(PageSize.A4.getWidth(), PageSize.A4.getHeight());
+//            float x = (PageSize.A4.getWidth() - image.getImageScaledWidth())/2;
+//            float y = (PageSize.A4.getHeight() - image.getImageScaledHeight())/2;
+//            image.setFixedPosition(x, y);
 
-        return "raw/ETL1727_00-COVER.pdf";
+            doc.add(image);
+            doc.close();
+            return dest;
+        }
+        return "raw/"+coverName;
     }
 
     private String loadTOR(ETL etl) throws FileNotFoundException {
         String dest = "tmp/tor.pdf";
-        Util.setTmpFiles(dest);
         Document document = Util.createPdf(dest);
         // Creating a Paragraph
         Paragraph paragraph = new Paragraph("Table of Revision");
@@ -81,40 +102,60 @@ public class CreateIntro {
 
         String oldChangeNo = "";
         Cell c1 = null, c2 = null, c3 = null, c4 = null, c5 = null, c6 = null;
+        String s1 = null, s2 = null, s3 = null, s4 = null, s5 = null, s6 = null;
         for (ETLRow row : etl.getSortedChangeNoList()){
-            if (row.getChangeno() != null && !row.getChangeno().isEmpty()){
+            if (row.getChangeno() != null && !row.getChangeno().isEmpty() && row.getNo() % 100 != 0 && row.getNo() != 10){
                 if(!row.getChangeno().equals(oldChangeNo)) {
                     if(oldChangeNo != "") {
-                        table.addCell(c1);
-                        table.addCell(c2);
-                        table.addCell(c3);
-                        table.addCell(c4);
-                        table.addCell(c5);
-                        table.addCell(c6);
+                        c1 = Util.setCell(s1, condition, TextAlignment.CENTER, false);
+                        c2 = Util.setCell(s2, condition, TextAlignment.CENTER, false);
+                        c3 = Util.setCell(s3, condition, TextAlignment.CENTER, false);
+                        c4 = Util.setCell(s4, condition, TextAlignment.CENTER, false);
+                        c5 = Util.setCell(s5, condition, TextAlignment.CENTER, false);
+                        c6 = Util.setCell(s6, condition, TextAlignment.LEFT, false);
+                        condition = !condition;
+                        oldChangeNo = row.getChangeno();
+                            table.addCell(c1);
+                            table.addCell(c2);
+                            table.addCell(c3);
+                            table.addCell(c4);
+                            table.addCell(c5);
+                            table.addCell(c6);
                     }
-                    c1 = Util.setCell(String.valueOf(row.getChangeno()), condition, TextAlignment.CENTER, false);
-                    String d = Util.parseDate(row.getChangeno());
-                    c2 = Util.setCell(d, condition, TextAlignment.CENTER, false);
-                    c3 = Util.setCell(row.getChapter().substring(0, 2).replaceFirst("^0+(?!$)", ""),
-                            condition, TextAlignment.CENTER, false);
+                    s1= String.valueOf(row.getChangeno());
+                    s2 = Util.parseDate(row.getChangeno());
+                    s3 = row.getChapter().substring(0, 2).replaceFirst("^0+(?!$)", "");
                     int l = String.valueOf(row.getNo()).length();
-                    String pos = String.valueOf(row.getNo()).substring(l - 2, l);
-                    c4 = Util.setCell(pos.replaceFirst("^0+(?!$)", ""),
-                            condition, TextAlignment.CENTER, false);
-                    c5 = Util.setCell(row.getPartno(), condition, TextAlignment.CENTER, false);
-                    c6 = Util.setCell(row.getDescription(), condition, TextAlignment.LEFT, false);
-                    condition = !condition;
+                    s4 = String.valueOf(row.getNo()).substring(l - 2, l).replaceFirst("^0+(?!$)", "");
+                    s5 = row.getPartno();
+                    s6 = row.getDescription();
                     oldChangeNo = row.getChangeno();
                 }else{
-
-
+                    s1= String.valueOf(row.getChangeno());
+                    s2 = Util.parseDate(row.getChangeno());
+                    s3 = s3 + "\r\n" + row.getChapter().substring(0, 2).replaceFirst("^0+(?!$)", "");
+                    int l = String.valueOf(row.getNo()).length();
+                    s4 = s4 + "\r\n" + String.valueOf(row.getNo()).substring(l - 2, l).replaceFirst("^0+(?!$)", "");
+                    s5 = s5 + "\r\n" + row.getPartno();
+                    s6 = s6 + "\r\n" + row.getDescription();
+                    oldChangeNo = row.getChangeno();
                 }
             }
-
         }
+        c1 = Util.setCell(s1, condition, TextAlignment.CENTER, false);
+        c2 = Util.setCell(s2, condition, TextAlignment.CENTER, false);
+        c3 = Util.setCell(s3, condition, TextAlignment.CENTER, false);
+        c4 = Util.setCell(s4, condition, TextAlignment.CENTER, false);
+        c5 = Util.setCell(s5, condition, TextAlignment.CENTER, false);
+        c6 = Util.setCell(s6, condition, TextAlignment.LEFT, false);
+        table.addCell(c1);
+        table.addCell(c2);
+        table.addCell(c3);
+        table.addCell(c4);
+        table.addCell(c5);
+        table.addCell(c6);
 
         document.add(table);
-        // Closing the document
         document.close();
         return dest;
     }
@@ -122,7 +163,6 @@ public class CreateIntro {
 
     private String loadTOC(ETL etl) throws FileNotFoundException {
         String dest = "tmp/toc.pdf";
-        Util.setTmpFiles(dest);
         Document document = Util.createPdf(dest);
         // Creating a Paragraph
         Paragraph paragraph = new Paragraph("Table of Content");
@@ -145,7 +185,9 @@ public class CreateIntro {
             if (row.getNo()%100 == 0 && row.getItemType() == 'T'){
                 int l = String.valueOf(row.getNo()).length();
                 table.addCell(Util.setCell(String.valueOf(row.getNo()).substring(0,l-2), condition, TextAlignment.RIGHT, false));
-                table.addCell(Util.setCell(row.getPartno(), condition, TextAlignment.LEFT, false).setPaddingLeft(40));
+                String descr =  row.getDescriptionLine2();
+                descr = descr.replaceAll("\\r", "\r\n");
+                table.addCell(Util.setCell(descr, condition, TextAlignment.LEFT, false).setPaddingLeft(40));
                 table.addCell(Util.setCell(etl.getContentMap().get(String.valueOf(row.getNo())).toString(), condition, TextAlignment.RIGHT, false));
                 condition = !condition;
             }

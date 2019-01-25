@@ -6,6 +6,7 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.AreaBreak;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.TextAlignment;
 import com.itextpdf.text.*;
@@ -28,12 +29,12 @@ public class CreateChapter {
         //lade Baugruppenbild
         if (etl.size() > 0 && etl.get(0) != null) {
             String rawFile = "tmp/"+etl.get(0).getNo()+"raw.pdf";
-            Util.setTmpFiles(rawFile);
             Document doc = Util.createPdf(rawFile);
 
-            int index = etl.get(0).getPartno().indexOf('-');
-            String imgFile = "raw/"+ etl.get(0).getPartno().substring(0, index)+".jpg";
-            ImageData data = ImageDataFactory.create(imgFile);
+            String imgPath = etl.get(0).getDescriptionLine2();
+            int index = imgPath.lastIndexOf('\\');
+            String imgFileName = "raw/" + imgPath.substring(index,imgPath.length());
+            ImageData data = ImageDataFactory.create(imgFileName);
 
             // Creating an Image object
             Image image = new Image(data);
@@ -65,13 +66,14 @@ public class CreateChapter {
                 condition = !condition;
                 // Page Title
                 if(row != null && row.getNo() % 100 == 0 && row.getItemType() == 'T') {
-                    title = row.getNo()/100 + "   " + row.getPartno();
-                    /* Paragraph p1 = new Paragraph(title);
-                    p1.setBold();
-                    p1.setFontSize(14);
-                    doc.add(p1);
-                    // Adding area break to the PDF
-                    doc.add(p1); */
+                        title = row.getNo()/100 + "   " + row.getDescriptionLine2();
+                    if(!row.getDescriptionLine2().isEmpty()){
+                        com.itextpdf.layout.element.Paragraph p1 = new Paragraph(row.getDescription());
+                        p1.setMarginLeft(5);
+                        p1.setBold();
+                        p1.setFontSize(12);
+                        doc.add(p1);
+                    }
                 }
         // Table
                 if(row != null && row.getNo() % 100 != 0) {
@@ -87,56 +89,52 @@ public class CreateChapter {
                     } else  c2 = Util.setCell("",condition,TextAlignment.CENTER, false);
                     table.addCell(c2);
         // Column 3 - Material No
+                    if(row.getPartno().isEmpty()) row.setPartno("xxx");
                     Cell c3 = Util.setCell(row.getPartno(),condition,TextAlignment.CENTER, false);
                     table.addCell(c3);
         // Column 4 - Description
                     String descr = row.getDescription();
-                    if (!row.getDescriptionLine2().isEmpty()){
+                    if(descr.isEmpty()){
+                        descr = row.getDescriptionLine2();
+                    }else if (!row.getDescriptionLine2().isEmpty()){
                         descr = row.getDescription() + "\r\n" +row.getDescriptionLine2();
-                    }
-                    if (!row.getDescriptionLine3().isEmpty()){
-                        descr = row.getDescription() + "\r\n" +row.getDescriptionLine3();
                     }
                     Cell c4 = Util.setCell(descr,condition,TextAlignment.LEFT, false);
                     table.addCell(c4);
         // Column 5 - Quantity
                     Cell c5 = null;
                     if (row.getQty() == (float) row.getQty()) {
-                        c5 = Util.setCell(String.format("%.0f",row.getQty()),condition,TextAlignment.LEFT, false);
+                        c5 = Util.setCell(String.format("%.0f",row.getQty()),condition,TextAlignment.CENTER, false);
                     }else{
-                        c5 = Util.setCell(String.format("%s", row.getQty()),condition,TextAlignment.LEFT, false);
+                        c5 = Util.setCell(String.format("%s", row.getQty()),condition,TextAlignment.CENTER, false);
                     }
                     table.addCell(c5);
         // Column 6 - ChangeNo
-                    Cell c6 = Util.setCell(row.getChangeno(),condition,TextAlignment.LEFT, false);
+                    Cell c6 = Util.setCell(row.getChangeno(),condition,TextAlignment.CENTER, false);
                     table.addCell(c6);
                 }
             }
-            boolean b = true;
-            int i = doc.getPdfDocument().getNumberOfPages();
 
-            // Adding Table to document
             doc.add(table);
-
-            if(doc.getPdfDocument().getNumberOfPages() % 2 != 0){
+            int i = doc.getPdfDocument().getNumberOfPages();
+            if(i % 2 != 0){
                 doc.add(new AreaBreak());
             }
             doc.close();
-            String dest = stampChapter(title, rawFile);
+            String dest = stampChapter(title, rawFile, i);
             // Closing the document
             return dest;
         }
         return null;
     }
 
-    private String stampChapter(String chapter, String rawFile) throws IOException, DocumentException {
+    private String stampChapter(String chapter, String rawFile, int originalPageCount) throws IOException, DocumentException {
         PdfReader readerFinal = new PdfReader(rawFile);
         String dest = rawFile.replaceAll("raw", "");
-        Util.setTmpFiles(dest);
         PdfStamper stamp = new PdfStamper(readerFinal, new FileOutputStream(dest));
         PdfContentByte over;
-
         int totalPages = readerFinal.getNumberOfPages();
+        if(originalPageCount % 2 != 0) totalPages-- ;
         for (int i = 1; i <= totalPages; i++) {
             over = stamp.getOverContent(i);
             ColumnText.showTextAligned(over, Element.ALIGN_LEFT,
@@ -144,6 +142,7 @@ public class CreateChapter {
                     55, PageSize.A4.getHeight() -40, 0);
         }
         stamp.close();
+        readerFinal.close();
         return dest;
     }
 }

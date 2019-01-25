@@ -5,6 +5,7 @@ import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.borders.Border;
+import com.itextpdf.layout.borders.SolidBorder;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.property.TextAlignment;
@@ -30,7 +31,6 @@ public class Util {
     static Color gray = new DeviceRgb(215, 215, 215);
     static Color white = new DeviceRgb(255, 255, 255);
     static BaseFont baseFont;
-    static ArrayList<String> tmpFiles;
 
     static {
         try {
@@ -42,16 +42,6 @@ public class Util {
         }
     }
 
-    public static void setTmpFiles(String tmpFiles) {
-        if(Util.tmpFiles == null) Util.tmpFiles = new ArrayList<>();
-        Util.tmpFiles.add(tmpFiles);
-    }
-
-
-    public static ArrayList<String> getTmpFiles() {
-        if(Util.tmpFiles == null) Util.tmpFiles = new ArrayList<>();
-        return Util.tmpFiles;
-    }
 
     public static void merge(ArrayList<String> files, String dest, HashMap contentMap)
             throws IOException, DocumentException, ParseException {
@@ -79,17 +69,26 @@ public class Util {
     }
 
     public static void removeTmpFiles(){
-        for (String f : getTmpFiles()){
-            File file = new File(f);
-            file.delete();
+        File[] paths = new File[2];
+        paths[0] = new File("raw");
+        paths[1] = new File("tmp");
+        String [] tmpFiles;
+        for(File f : paths) {
+            if (f.isDirectory()) {
+                tmpFiles = f.list();
+                for (int i = 0; i < tmpFiles.length; i++) {
+                    File tmpFile = new File(f, tmpFiles[i]);
+                    tmpFile.delete();
+                }
+            }
         }
     }
 
     public static com.itextpdf.layout.Document createPdf(String dest) throws FileNotFoundException {
         com.itextpdf.kernel.pdf.PdfWriter writer = new PdfWriter(dest);
         PdfDocument pdf = new PdfDocument(writer);
-        com.itextpdf.layout.Document document = new com.itextpdf.layout.Document(pdf);
-        document.setMargins(50, 50, 50, 50);
+        com.itextpdf.layout.Document document = new com.itextpdf.layout.Document(pdf, com.itextpdf.kernel.geom.PageSize.A4);
+        document.setMargins(50, 50, 60, 50);
         return document;
     }
 
@@ -100,7 +99,10 @@ public class Util {
         c.setBackgroundColor(condition ? gray : white);
         c.setTextAlignment(alignment);
         c.setBorder(Border.NO_BORDER);
-        if (bold) c.setBold();
+        if (bold) {
+            c.setBold();
+            c.setBorderBottom(new SolidBorder(1));
+        }
         return c;
     }
 
@@ -112,25 +114,26 @@ public class Util {
         return changeno.substring(5, 7) + "." + changeno.substring(3, 5) + "." + year + changeno.substring(1, 3);
     }
 
-    public static void stampPageNo() throws IOException, DocumentException {
+    public static void stampPageNo(String etlNo) throws IOException, DocumentException {
         PdfReader readerFinal = new PdfReader("tmp/helper2.pdf");
         int totalPages = readerFinal.getNumberOfPages();
-        PdfStamper stamp = new PdfStamper(readerFinal, new FileOutputStream("tmp/final.pdf"));
+        PdfStamper stamp = new PdfStamper(readerFinal, new FileOutputStream("pub/"+ etlNo +".pdf"));
         PdfContentByte over;
         for (int i = 1; i <= totalPages; i++) {
             if(i!=1) {
                 over = stamp.getOverContent(i);
                 DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
-                ColumnText.showTextAligned(over, Element.ALIGN_LEFT, new Phrase("ETL"), 50, 40, 0);
+                ColumnText.showTextAligned(over, Element.ALIGN_LEFT, new Phrase(etlNo), 50, 40, 0);
                 ColumnText.showTextAligned(over, Element.ALIGN_CENTER,
                         new Phrase("Copyright 2018 \u00a9 ROTAX"), PageSize.A4.getWidth() / 2, 40, 0);
                 ColumnText.showTextAligned(over, Element.ALIGN_RIGHT,
                         new Phrase("Page: " + i), PageSize.A4.getWidth() - 50, 40, 0);
                 ColumnText.showTextAligned(over, Element.ALIGN_CENTER,
-                        new Phrase("This printed Version is not subject to an updating service - " + df.format(new Date()),
+                        new Phrase("This printed version is not subject to an updating service - " + df.format(new Date()),
                                 FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)),PageSize.A4.getWidth() / 2, 30, 0);
             }
         }
         stamp.close();
+        readerFinal.close();
     }
 }
