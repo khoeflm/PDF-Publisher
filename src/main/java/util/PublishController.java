@@ -6,7 +6,10 @@ import controller.CreateChapter;
 import controller.CreateIntro;
 import model.ETL;
 import org.apache.commons.io.FileUtils;
+import view.PublishUi;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -21,26 +24,34 @@ import java.util.ArrayList;
  * PDF Publisher
  * Created by khoef on 21.01.2019.
  */
-public class Main {
+public class PublishController implements ActionListener {
 
+    private PublishUi view;
     private static Path tempDir;
     private static File baseDir;
+    private static File inputFile;
 
-    public static void main(String[] args) throws IOException {
+    private PublishController(){
+        view = new PublishUi(this);
+    }
+
+    public void publish() throws IOException {
         tempDir = Paths.get(System.getProperty("java.io.tmpdir")+"/pdf_publisher/");
-        LicenseKey.loadLicenseFile(Main.class.getResourceAsStream("/testkey.xml"));
+        LicenseKey.loadLicenseFile(PublishController.class.getResourceAsStream("/testkey.xml"));
 
-        ArrayList<String> pdfList = new ArrayList<>();
-        ETL etl = null;
-        System.out.println("*************************************************************");
+
+       /* System.out.println("*************************************************************");
         System.out.println("********************    PDF Publisher    ********************");
         System.out.println("*************************************************************");
         System.out.println();
         System.out.println("Vollständigen Pfad inkl. Filename und Fileendung angeben");
         System.out.print("ETL: ");
 
-        String etlFileName = fileNameInput();
+        String etlFileName = fileNameInput();*/
 
+        ArrayList<String> pdfList = new ArrayList<>();
+        ETL etl = null;
+        String etlFileName = inputFile.toString();
 
         String[] files;
         int index = etlFileName.lastIndexOf('\\');
@@ -139,5 +150,22 @@ public class Main {
             }
         }
         return etlFileName;
+    }
+
+    public static void main(String[] args){
+        new PublishController();
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if(view.getStartPublishing() == e.getSource()){
+            baseDir = view.getfBaseDir().getCurrentDirectory();
+            inputFile = view.getfInputFile().getSelectedFile();
+            try {
+                publish();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
     }
 }

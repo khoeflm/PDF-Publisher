@@ -61,14 +61,13 @@ public class CreateIntro {
         } else if(fileformat.equalsIgnoreCase("jpg")){
             String dest = tempDir + "/COVER.pdf";
             Document doc = Util.createPdf(dest);
-//            doc.setMargins(0,0,0,0);
             String imgFile = "raw/"+coverName;
             ImageData data = ImageDataFactory.create(imgFile);
             Image image = new Image(data);
+            image.setFixedPosition(0,0);
             image.scaleToFit(PageSize.A4.getWidth(), PageSize.A4.getHeight());
-//            float x = (PageSize.A4.getWidth() - image.getImageScaledWidth())/2;
-//            float y = (PageSize.A4.getHeight() - image.getImageScaledHeight())/2;
-//            image.setFixedPosition(x, y);
+
+
 
             doc.add(image);
             doc.close();
