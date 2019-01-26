@@ -17,6 +17,7 @@ import util.Util;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.ArrayList;
 
@@ -26,9 +27,9 @@ import java.util.ArrayList;
  */
 public class CreateIntro {
 
-    public String createIntro(ETL etl) throws ParseException {
+    public String createIntro(ETL etl, Path tempDir) throws ParseException {
         ArrayList<String> pdfList = new ArrayList<>();
-        String dest = "tmp/intro.pdf";
+        String dest = tempDir + "/intro.pdf";
         String cover = null;
         for (ETLRow row : etl.getEtl()){
             if (row.getNo()== 10 && row.getItemType() == 'D'){
@@ -38,10 +39,10 @@ public class CreateIntro {
             }
         }
         try {
-            pdfList.add(loadCover(cover));
-            pdfList.add(loadTOR(etl));
-            pdfList.add(loadTOC(etl));
-            Util.merge(pdfList, dest, null);
+            pdfList.add(loadCover(cover, tempDir.toString()));
+            pdfList.add(loadTOR(etl, tempDir.toString()));
+            pdfList.add(loadTOC(etl, tempDir.toString()));
+            Util.merge(pdfList, dest, null, tempDir);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (DocumentException e) {
@@ -53,12 +54,12 @@ public class CreateIntro {
 
     }
 
-    private String loadCover(String coverName) throws FileNotFoundException, MalformedURLException {
+    private String loadCover(String coverName, String tempDir) throws FileNotFoundException, MalformedURLException {
         String fileformat = coverName.substring(coverName.length()-3,coverName.length());
         if(fileformat.equalsIgnoreCase("pdf")) {
-            return "raw/" + coverName;
+            return tempDir +"/"+ coverName;
         } else if(fileformat.equalsIgnoreCase("jpg")){
-            String dest = "tmp/" + "COVER.pdf";
+            String dest = tempDir + "/COVER.pdf";
             Document doc = Util.createPdf(dest);
 //            doc.setMargins(0,0,0,0);
             String imgFile = "raw/"+coverName;
@@ -73,11 +74,11 @@ public class CreateIntro {
             doc.close();
             return dest;
         }
-        return "raw/"+coverName;
+        return tempDir + "/" +coverName;
     }
 
-    private String loadTOR(ETL etl) throws FileNotFoundException {
-        String dest = "tmp/tor.pdf";
+    private String loadTOR(ETL etl, String tempDir) throws FileNotFoundException {
+        String dest = tempDir +"/tor.pdf";
         Document document = Util.createPdf(dest);
         // Creating a Paragraph
         Paragraph paragraph = new Paragraph("Table of Revision");
@@ -161,8 +162,8 @@ public class CreateIntro {
     }
 
 
-    private String loadTOC(ETL etl) throws FileNotFoundException {
-        String dest = "tmp/toc.pdf";
+    private String loadTOC(ETL etl, String tempDir) throws FileNotFoundException {
+        String dest = tempDir+"/toc.pdf";
         Document document = Util.createPdf(dest);
         // Creating a Paragraph
         Paragraph paragraph = new Paragraph("Table of Content");

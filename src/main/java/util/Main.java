@@ -5,10 +5,14 @@ import com.itextpdf.text.DocumentException;
 import controller.CreateChapter;
 import controller.CreateIntro;
 import model.ETL;
-import model.ETLRow;
 import org.apache.commons.io.FileUtils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 
@@ -18,10 +22,13 @@ import java.util.ArrayList;
  * Created by khoef on 21.01.2019.
  */
 public class Main {
+
+    private static Path tempDir;
+    private static File baseDir;
+
     public static void main(String[] args) throws IOException {
-
-
-        LicenseKey.loadLicenseFile("licenceKey/testkey.xml");
+        tempDir = Paths.get(System.getProperty("java.io.tmpdir")+"/pdf_publisher/");
+        LicenseKey.loadLicenseFile(Main.class.getResourceAsStream("/testkey.xml"));
 
         ArrayList<String> pdfList = new ArrayList<>();
         ETL etl = null;
@@ -38,70 +45,65 @@ public class Main {
         String[] files;
         int index = etlFileName.lastIndexOf('\\');
         etlFileName = etlFileName.toUpperCase();
-        File file = new File(etlFileName.substring(0,index));
-        if (file.isDirectory()){
-            files = file.list();
-            for (int i = 0; i < files.length; i++){
-                FileUtils.copyFile(new File(file+ "\\"+files[i]), new File("raw/"+files[i]));
+
+        baseDir = new File(etlFileName.substring(0, index));
+        if (baseDir.isDirectory()){
+            files = baseDir.list();
+            if (files != null) {
+                for (String file : files) {
+                    String fileFilter = etlFileName.substring(index+1, etlFileName.lastIndexOf('.'));
+                    if(file.contains(fileFilter)){
+                        FileUtils.moveFile(new File(baseDir + "\\" + file), new File(tempDir + "/" + file));
+                    }
+                }
             }
         }
 
-
-        try {
-            etl = new ETL(etlFileName);
-        } catch (FileNotFoundException e) {
-            System.out.println("Datei kann nicht geöffnet werden");
-        }
+        etl = new ETL(etlFileName);
 
         CreateChapter cc = new CreateChapter();
-        ArrayList<ETLRow> chapterItems = new ArrayList();
+        ArrayList chapterItems = new ArrayList();
         for(int i=100; i<=9999; i++){
             if(i!=100 && i%100==0){
                 try {
-                    pdfList.add(cc.createChapter(chapterItems));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (DocumentException e) {
+                    pdfList.add(cc.createChapter(chapterItems, tempDir));
+                } catch (IOException | DocumentException e) {
                     e.printStackTrace();
                 }
                 chapterItems = new ArrayList<>();
             }
-            chapterItems.addAll(etl.getItems(i));
+            if (etl != null) {
+                chapterItems.addAll(etl.getItems(i));
+            }
         }
         try {
-            Util.merge(pdfList, "tmp/helper.pdf", etl.getContentMap());
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (DocumentException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
+            if (etl != null) {
+                Util.merge(pdfList, tempDir+"/helper.pdf", etl.getContentMap(), tempDir);
+            }
+        } catch (IOException | DocumentException | ParseException e) {
             e.printStackTrace();
         }
         CreateIntro ci = new CreateIntro();
         pdfList.clear();
         try {
-            pdfList.add(ci.createIntro(etl));
+            pdfList.add(ci.createIntro(etl, tempDir));
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        pdfList.add("tmp/helper.pdf");
+        pdfList.add(tempDir+"/helper.pdf");
         try {
-            Util.merge(pdfList,"tmp/helper2.pdf", null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (DocumentException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
+            Util.merge(pdfList,tempDir+"/helper2.pdf", null, tempDir);
+        } catch (IOException | DocumentException | ParseException e) {
             e.printStackTrace();
         }
         try {
-            Util.stampPageNo(etl.getEtlNo());
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (DocumentException e) {
+            if (etl != null) {
+                Util.stampPageNo(etl.getEtlNo(), tempDir.toString(), baseDir.toString());
+            }
+        } catch (IOException | DocumentException e) {
             e.printStackTrace();
         }
-        Util.removeTmpFiles();
+        Util.removeTmpFiles(tempDir);
 
     }
 

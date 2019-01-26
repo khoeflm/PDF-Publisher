@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ public class Util {
     }
 
 
-    public static void merge(ArrayList<String> files, String dest, HashMap contentMap)
+    public static void merge(ArrayList<String> files, String dest, HashMap contentMap, Path tempDir)
             throws IOException, DocumentException, ParseException {
 
         Document document = new Document(PageSize.A4, 40, 40, 60, 60);
@@ -55,6 +56,7 @@ public class Util {
                 PdfReader reader = new PdfReader(file);
                 PdfReader.unethicalreading = true;
                 if(contentMap != null) {
+                    file = file.replace(tempDir.toString(), "");
                     int indexEnd = file.indexOf(".");
                     int indexStart = file.indexOf("/");
                     contentMap.put(file.substring(indexStart+1, indexEnd), pageNum);
@@ -68,10 +70,9 @@ public class Util {
         document.close();
     }
 
-    public static void removeTmpFiles(){
-        File[] paths = new File[2];
-        paths[0] = new File("raw");
-        paths[1] = new File("tmp");
+    public static void removeTmpFiles(Path tempDir){
+        File[] paths = new File[1];
+        paths[0] = new File(tempDir.toString());
     //    paths[2] = new File("");
         String [] tmpFiles;
         for(File f : paths) {
@@ -115,10 +116,10 @@ public class Util {
         return changeno.substring(5, 7) + "." + changeno.substring(3, 5) + "." + year + changeno.substring(1, 3);
     }
 
-    public static void stampPageNo(String etlNo) throws IOException, DocumentException {
-        PdfReader readerFinal = new PdfReader("tmp/helper2.pdf");
+    public static void stampPageNo(String etlNo, String tempDir, String baseDir) throws IOException, DocumentException {
+        PdfReader readerFinal = new PdfReader(tempDir + "/helper2.pdf");
         int totalPages = readerFinal.getNumberOfPages();
-        PdfStamper stamp = new PdfStamper(readerFinal, new FileOutputStream("pub/"+ etlNo +".pdf"));
+        PdfStamper stamp = new PdfStamper(readerFinal, new FileOutputStream(baseDir +"/"+ etlNo +".pdf"));
         PdfContentByte over;
         for (int i = 1; i <= totalPages; i++) {
             if(i!=1) {

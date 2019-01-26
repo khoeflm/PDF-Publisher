@@ -1,7 +1,7 @@
 package model;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -15,19 +15,24 @@ public class ETL {
     ArrayList<ETLRow> etl;
     HashMap<String, String> contentMap;
 
-
-    public ETL(String file) throws FileNotFoundException {
+    public ETL(String file){
         int i = file.lastIndexOf("\\");
         etlNo = file.substring(i+1,i+8).toUpperCase();
-        this.contentMap = new HashMap<>();
-        etl = new ArrayList<>();
-        Scanner scanner = new Scanner(new File(file));
-        scanner.useDelimiter("\r\n");
-        while (scanner.hasNext()) {
-            String line = scanner.next();
-            line = removeNul(line);
-            this.etl.add(new ETLRow(line));
+        try {
+            this.contentMap = new HashMap<>();
+            etl = new ArrayList<>();
+            Scanner scanner = new Scanner(new File(file));
+            scanner.useDelimiter("\r\n");
+            while (scanner.hasNext()) {
+                String line = scanner.next();
+                line = (line);
+                this.etl.add(new ETLRow(line));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+
     }
 
     private String removeNul(String s) {

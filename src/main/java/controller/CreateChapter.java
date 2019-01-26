@@ -5,19 +5,14 @@ import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.*;
-import com.itextpdf.layout.element.Image;
-import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.property.TextAlignment;
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.ColumnText;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfReader;
-import com.itextpdf.text.pdf.PdfStamper;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.PageSize;
 import model.ETLRow;
 import util.Util;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 /**
@@ -26,11 +21,11 @@ import java.util.ArrayList;
  */
 public class CreateChapter {
 
-    public String createChapter(ArrayList<ETLRow> etl) throws IOException, DocumentException {
+    public String createChapter(ArrayList<ETLRow> etl, Path tempDir) throws IOException, DocumentException {
         String title = null;
         //lade Baugruppenbild
         if (etl.size() > 0 && etl.get(0) != null) {
-            String rawFile = "tmp/"+etl.get(0).getNo()+".pdf";
+            String rawFile = tempDir.toString()+"/"+etl.get(0).getNo()+".pdf";
             Document doc = Util.createPdf(rawFile);
 
             String titleLine1 = null, titleLine2 = null;
@@ -58,7 +53,7 @@ public class CreateChapter {
 
             String imgPath = etl.get(0).getDescriptionLine2();
             int index = imgPath.lastIndexOf('\\');
-            String imgFileName = "raw/" + imgPath.substring(index,imgPath.length());
+            String imgFileName = tempDir + "" + imgPath.substring(index,imgPath.length());
             ImageData data = ImageDataFactory.create(imgFileName);
 
             // Creating an Image object
@@ -152,7 +147,7 @@ public class CreateChapter {
         return null;
     }
 
-    private String stampChapter(String chapter, String rawFile, int originalPageCount) throws IOException, DocumentException {
+ /*   private String stampChapter(String chapter, String rawFile, int originalPageCount) throws IOException, DocumentException {
         PdfReader readerFinal = new PdfReader(rawFile);
         int linebreak = chapter.indexOf('\r');
         String chapterLine2 = null;
@@ -176,5 +171,5 @@ public class CreateChapter {
         stamp.close();
         readerFinal.close();
         return dest;
-    }
+    }*/
 }
