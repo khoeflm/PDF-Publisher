@@ -89,7 +89,7 @@ public class CreateIntro {
         // Creating a table
         float[] pointColumnWidths = {70F, 70F, 70F, 25F, 70F, 310F};
         Table table = new Table(pointColumnWidths);        // Add elements to the list
-        table.setFontSize(10);
+        table.setFontSize(9);
         table.addHeaderCell(Util.setCell("CHANGE", true, TextAlignment.CENTER, true));
         table.addHeaderCell(Util.setCell("DATE", true, TextAlignment.CENTER, true));
         table.addHeaderCell(Util.setCell("CHAPTER", true, TextAlignment.CENTER, true));

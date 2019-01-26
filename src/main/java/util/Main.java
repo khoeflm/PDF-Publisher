@@ -1,5 +1,6 @@
 package util;
 
+import com.itextpdf.licensekey.LicenseKey;
 import com.itextpdf.text.DocumentException;
 import controller.CreateChapter;
 import controller.CreateIntro;
@@ -18,19 +19,21 @@ import java.util.ArrayList;
  */
 public class Main {
     public static void main(String[] args) throws IOException {
+
+
+        LicenseKey.loadLicenseFile("licenceKey/testkey.xml");
+
         ArrayList<String> pdfList = new ArrayList<>();
         ETL etl = null;
-        System.out.println("************************PDF Publisher************************");
-        System.out.println("ETL: ");
-        //Enter data using BufferReader
-        BufferedReader reader =  new BufferedReader(new InputStreamReader(System.in));
-        String etlFileName = null;
+        System.out.println("*************************************************************");
+        System.out.println("********************    PDF Publisher    ********************");
+        System.out.println("*************************************************************");
+        System.out.println();
+        System.out.println("Vollständigen Pfad inkl. Filename und Fileendung angeben");
+        System.out.print("ETL: ");
 
-        try {
-            etlFileName = reader.readLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String etlFileName = fileNameInput();
+
 
         String[] files;
         int index = etlFileName.lastIndexOf('\\');
@@ -47,8 +50,9 @@ public class Main {
         try {
             etl = new ETL(etlFileName);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            System.out.println("Datei kann nicht geöffnet werden");
         }
+
         CreateChapter cc = new CreateChapter();
         ArrayList<ETLRow> chapterItems = new ArrayList();
         for(int i=100; i<=9999; i++){
@@ -99,5 +103,39 @@ public class Main {
         }
         Util.removeTmpFiles();
 
+    }
+
+    private static String fileNameInput() {
+        BufferedReader reader =  new BufferedReader(new InputStreamReader(System.in));
+        String etlFileName = null;
+        boolean fileNamePatternCorrect = false;
+        while(!fileNamePatternCorrect) {
+            try {
+                etlFileName = reader.readLine();
+                int lastDelimiter = etlFileName.lastIndexOf('\\');
+                if (lastDelimiter == -1) {
+                    lastDelimiter = etlFileName.lastIndexOf('/');
+                    if(lastDelimiter == -1){
+                        System.out.println("Keine Pfadangabe - Bitte einen Filepfad angeben:");
+                    }
+                }
+                int fileTypeStart = etlFileName.lastIndexOf('.');
+                if (lastDelimiter != -1 && fileTypeStart != -1) {
+                    String fileType = etlFileName.substring(fileTypeStart + 1);
+                    if (fileType.equalsIgnoreCase("csv") ||
+                            fileType.equalsIgnoreCase("txt")) {
+                        String filename = etlFileName.substring(lastDelimiter + 1, fileTypeStart);
+                        if (filename.substring(1, 4).equalsIgnoreCase("ETL")) {
+                            System.out.println("Der Dateiname startet nicht mit 'ETL'! Bitte richtigen Pfad angeben: ");
+                        } else fileNamePatternCorrect = true;
+                    } else{
+                        System.out.println("Falscher Dateityp! Bitte richtigen Pfad angeben: ");
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return etlFileName;
     }
 }

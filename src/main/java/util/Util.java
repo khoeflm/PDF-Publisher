@@ -72,6 +72,7 @@ public class Util {
         File[] paths = new File[2];
         paths[0] = new File("raw");
         paths[1] = new File("tmp");
+    //    paths[2] = new File("");
         String [] tmpFiles;
         for(File f : paths) {
             if (f.isDirectory()) {
@@ -88,7 +89,7 @@ public class Util {
         com.itextpdf.kernel.pdf.PdfWriter writer = new PdfWriter(dest);
         PdfDocument pdf = new PdfDocument(writer);
         com.itextpdf.layout.Document document = new com.itextpdf.layout.Document(pdf, com.itextpdf.kernel.geom.PageSize.A4);
-        document.setMargins(50, 50, 60, 50);
+        document.setMargins(40, 50, 60, 50);
         return document;
     }
 
