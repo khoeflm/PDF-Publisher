@@ -12,6 +12,7 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
 import model.ETL;
 import model.ETLRow;
+import util.Localization;
 import util.Util;
 
 import java.io.FileNotFoundException;
@@ -27,7 +28,7 @@ import java.util.ArrayList;
  */
 public class CreateIntro {
 
-    public String createIntro(ETL etl, Path tempDir) throws ParseException {
+    public String createIntro(ETL etl, Path tempDir, Localization localization) throws ParseException {
         ArrayList<String> pdfList = new ArrayList<>();
         String dest = tempDir + "/intro.pdf";
         String cover = null;
@@ -40,8 +41,8 @@ public class CreateIntro {
         }
         try {
             pdfList.add(loadCover(cover, tempDir.toString()));
-            pdfList.add(loadTOR(etl, tempDir.toString()));
-            pdfList.add(loadTOC(etl, tempDir.toString()));
+            pdfList.add(loadTOR(etl, tempDir.toString(), localization));
+            pdfList.add(loadTOC(etl, tempDir.toString(), localization));
             Util.merge(pdfList, dest, null, tempDir);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -76,11 +77,11 @@ public class CreateIntro {
         return tempDir + "/" +coverName;
     }
 
-    private String loadTOR(ETL etl, String tempDir) throws FileNotFoundException {
+    private String loadTOR(ETL etl, String tempDir, Localization localization) throws FileNotFoundException {
         String dest = tempDir +"/tor.pdf";
         Document document = Util.createPdf(dest);
         // Creating a Paragraph
-        Paragraph paragraph = new Paragraph("Table of Revision");
+        Paragraph paragraph = new Paragraph(localization.getRevision());
         paragraph.setFontSize(14);
         paragraph.setBold();
         paragraph.setTextAlignment(TextAlignment.CENTER);
@@ -90,12 +91,12 @@ public class CreateIntro {
         float[] pointColumnWidths = {70F, 70F, 70F, 25F, 70F, 310F};
         Table table = new Table(pointColumnWidths);        // Add elements to the list
         table.setFontSize(9);
-        table.addHeaderCell(Util.setCell("CHANGE", true, TextAlignment.CENTER, true));
-        table.addHeaderCell(Util.setCell("DATE", true, TextAlignment.CENTER, true));
-        table.addHeaderCell(Util.setCell("CHAPTER", true, TextAlignment.CENTER, true));
-        table.addHeaderCell(Util.setCell("#", true, TextAlignment.CENTER, true));
-        table.addHeaderCell(Util.setCell("PART#", true, TextAlignment.CENTER, true));
-        table.addHeaderCell(Util.setCell("DESCRIPTION", true, TextAlignment.LEFT, true));
+        table.addHeaderCell(Util.setCell(localization.getChange(), true, TextAlignment.CENTER, true));
+        table.addHeaderCell(Util.setCell(localization.getDate(), true, TextAlignment.CENTER, true));
+        table.addHeaderCell(Util.setCell(localization.getChapter(), true, TextAlignment.CENTER, true));
+        table.addHeaderCell(Util.setCell(localization.getNum(), true, TextAlignment.CENTER, true));
+        table.addHeaderCell(Util.setCell(localization.getPart(), true, TextAlignment.CENTER, true));
+        table.addHeaderCell(Util.setCell(localization.getDescr(), true, TextAlignment.LEFT, true));
 
         boolean condition = false;
 
@@ -161,11 +162,11 @@ public class CreateIntro {
     }
 
 
-    private String loadTOC(ETL etl, String tempDir) throws FileNotFoundException {
+    private String loadTOC(ETL etl, String tempDir, Localization localization) throws FileNotFoundException {
         String dest = tempDir+"/toc.pdf";
         Document document = Util.createPdf(dest);
         // Creating a Paragraph
-        Paragraph paragraph = new Paragraph("Table of Content");
+        Paragraph paragraph = new Paragraph(localization.getInhalt());
         paragraph.setFontSize(14);
         paragraph.setBold();
         paragraph.setTextAlignment(TextAlignment.CENTER);
@@ -175,9 +176,9 @@ public class CreateIntro {
         float[] pointColumnWidths = {35F, 450F, 35F};
         Table table = new Table(pointColumnWidths);        // Add elements to the list
         table.setFontSize(10);
-        table.addHeaderCell(Util.setCell("CHAPTER", true, TextAlignment.CENTER, true));
-        table.addHeaderCell(Util.setCell("DESCRIPTION", true, TextAlignment.LEFT, true).setPaddingLeft(40));
-        table.addHeaderCell(Util.setCell("PAGE", true, TextAlignment.RIGHT, true));
+        table.addHeaderCell(Util.setCell(localization.getChapter(), true, TextAlignment.CENTER, true));
+        table.addHeaderCell(Util.setCell(localization.getDescr(), true, TextAlignment.LEFT, true).setPaddingLeft(40));
+        table.addHeaderCell(Util.setCell(localization.getPage(), true, TextAlignment.RIGHT, true));
 
         boolean condition = false;
         // Add elements to the list

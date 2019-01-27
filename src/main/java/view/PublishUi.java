@@ -6,55 +6,52 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * SemNOTAM Project (User Interface)
+ * PDF Publisher
  * Created by khoef on 26.01.2019.
  */
 public class PublishUi extends JFrame {
 
-    private Container container = getContentPane();
     private JButton startPublishing = new JButton("PDF erstellen");
-    private PublishController controller;
-    private JPanel centerPane = new JPanel();
-    private JPanel bottomPane = new JPanel();
-    private JLabel lInputFile = new JLabel("Eingabefile: ");
-    private JLabel lBaseDir = new JLabel("Ausgabepfad: ");
     private JFileChooser fInputFile = new JFileChooser();
     private JFileChooser fBaseDir = new JFileChooser();
+    private JComboBox cLang = new JComboBox();
 
     public PublishUi(PublishController controller){
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (UnsupportedLookAndFeelException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
-        this.controller = controller;
+        Container container = getContentPane();
         container.setLayout(new BorderLayout());
         container.add(new JLabel("Erstellen Sie aus einem Rohfile ein ETL PDF", SwingConstants.CENTER),
                 BorderLayout.PAGE_START);
 
-        fBaseDir.set
+        fInputFile.setControlButtonsAreShown(false);
+        fBaseDir.setControlButtonsAreShown(false);
+        cLang.addItem("EN");
+        cLang.addItem("DE");
 
-        centerPane.setLayout(new FlowLayout());
+        JPanel centerPane = new JPanel();
+        centerPane.setLayout(new GridLayout(2,2));
+        JLabel lInputFile = new JLabel("Eingabefile: ");
         centerPane.add(lInputFile);
         centerPane.add(fInputFile);
+        JLabel lBaseDir = new JLabel("Ausgabepfad: ");
         centerPane.add(lBaseDir);
         centerPane.add(fBaseDir);
         container.add(centerPane, BorderLayout.CENTER);
 
+
+        JPanel bottomPane = new JPanel();
         bottomPane.setLayout(new FlowLayout());
         bottomPane.add(startPublishing);
         startPublishing.addActionListener(controller);
         container.add(bottomPane, BorderLayout.PAGE_END);
 
         setTitle("PDF-Publisher");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        container.setPreferredSize(new Dimension(400, 200));
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        container.setPreferredSize(new Dimension(900, 900));
         pack();
         setVisible(true);
 
@@ -70,5 +67,9 @@ public class PublishUi extends JFrame {
 
     public JFileChooser getfInputFile() {
         return fInputFile;
+    }
+
+    public JComboBox getcLang() {
+        return cLang;
     }
 }

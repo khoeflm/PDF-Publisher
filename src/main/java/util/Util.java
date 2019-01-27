@@ -18,34 +18,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
 /**
- * PDF Pubisher
+ * PDF Publisher
  * Created by khoef on 21.01.2019.
  */
 public class Util {
 
-    static Color gray = new DeviceRgb(215, 215, 215);
-    static Color white = new DeviceRgb(255, 255, 255);
-    static BaseFont baseFont;
-
-    static {
-        try {
-            baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.EMBEDDED);
-        } catch (DocumentException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
+    private static Color gray = new DeviceRgb(215, 215, 215);
+    private static Color white = new DeviceRgb(255, 255, 255);
 
     public static void merge(ArrayList<String> files, String dest, HashMap contentMap, Path tempDir)
-            throws IOException, DocumentException, ParseException {
+            throws IOException, DocumentException {
 
         Document document = new Document(PageSize.A4, 40, 40, 60, 60);
         PdfCopy copy = new PdfCopy(document, new FileOutputStream(dest));
@@ -70,7 +57,7 @@ public class Util {
         document.close();
     }
 
-    public static void removeTmpFiles(Path tempDir){
+    static void removeTmpFiles(Path tempDir){
         File[] paths = new File[1];
         paths[0] = new File(tempDir.toString());
     //    paths[2] = new File("");
@@ -78,9 +65,11 @@ public class Util {
         for(File f : paths) {
             if (f.isDirectory()) {
                 tmpFiles = f.list();
-                for (int i = 0; i < tmpFiles.length; i++) {
-                    File tmpFile = new File(f, tmpFiles[i]);
-                    tmpFile.delete();
+                if (tmpFiles != null) {
+                    for (String tmpFile1 : tmpFiles) {
+                        File tmpFile = new File(f, tmpFile1);
+                        tmpFile.delete();
+                    }
                 }
             }
         }
@@ -116,7 +105,7 @@ public class Util {
         return changeno.substring(5, 7) + "." + changeno.substring(3, 5) + "." + year + changeno.substring(1, 3);
     }
 
-    public static void stampPageNo(String etlNo, String tempDir, String baseDir) throws IOException, DocumentException {
+    static void stampPageNo(String etlNo, String tempDir, String baseDir, Localization localization) throws IOException, DocumentException {
         PdfReader readerFinal = new PdfReader(tempDir + "/helper2.pdf");
         int totalPages = readerFinal.getNumberOfPages();
         PdfStamper stamp = new PdfStamper(readerFinal, new FileOutputStream(baseDir +"/"+ etlNo +".pdf"));
@@ -127,11 +116,11 @@ public class Util {
                 DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
                 ColumnText.showTextAligned(over, Element.ALIGN_LEFT, new Phrase(etlNo), 50, 40, 0);
                 ColumnText.showTextAligned(over, Element.ALIGN_CENTER,
-                        new Phrase("Copyright 2018 \u00a9 ROTAX"), PageSize.A4.getWidth() / 2, 40, 0);
+                        new Phrase(localization.getCopyright()), PageSize.A4.getWidth() / 2, 40, 0);
                 ColumnText.showTextAligned(over, Element.ALIGN_RIGHT,
-                        new Phrase("Page: " + i), PageSize.A4.getWidth() - 50, 40, 0);
+                        new Phrase(localization.getPage() + i), PageSize.A4.getWidth() - 50, 40, 0);
                 ColumnText.showTextAligned(over, Element.ALIGN_CENTER,
-                        new Phrase("This printed version is not subject to an updating service - " + df.format(new Date()),
+                        new Phrase(localization.getUpdate() + df.format(new Date()),
                                 FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)),PageSize.A4.getWidth() / 2, 30, 0);
             }
         }

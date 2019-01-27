@@ -10,10 +10,8 @@ import view.PublishUi;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
@@ -27,16 +25,16 @@ import java.util.ArrayList;
 public class PublishController implements ActionListener {
 
     private PublishUi view;
-    private static Path tempDir;
     private static File baseDir;
     private static File inputFile;
+    private Localization localization;
 
     private PublishController(){
         view = new PublishUi(this);
     }
 
-    public void publish() throws IOException {
-        tempDir = Paths.get(System.getProperty("java.io.tmpdir")+"/pdf_publisher/");
+    private void publish() throws IOException {
+        Path tempDir = Paths.get(System.getProperty("java.io.tmpdir") + "/pdf_publisher/");
         LicenseKey.loadLicenseFile(PublishController.class.getResourceAsStream("/testkey.xml"));
 
 
@@ -50,7 +48,7 @@ public class PublishController implements ActionListener {
         String etlFileName = fileNameInput();*/
 
         ArrayList<String> pdfList = new ArrayList<>();
-        ETL etl = null;
+        ETL etl;
         String etlFileName = inputFile.toString();
 
         String[] files;
@@ -77,40 +75,34 @@ public class PublishController implements ActionListener {
         for(int i=100; i<=9999; i++){
             if(i!=100 && i%100==0){
                 try {
-                    pdfList.add(cc.createChapter(chapterItems, tempDir));
-                } catch (IOException | DocumentException e) {
+                    pdfList.add(cc.createChapter(chapterItems, tempDir, localization));
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
                 chapterItems = new ArrayList<>();
             }
-            if (etl != null) {
-                chapterItems.addAll(etl.getItems(i));
-            }
+            chapterItems.addAll(etl.getItems(i));
         }
         try {
-            if (etl != null) {
-                Util.merge(pdfList, tempDir+"/helper.pdf", etl.getContentMap(), tempDir);
-            }
-        } catch (IOException | DocumentException | ParseException e) {
+            Util.merge(pdfList, tempDir +"/helper.pdf", etl.getContentMap(), tempDir);
+        } catch (IOException | DocumentException e) {
             e.printStackTrace();
         }
         CreateIntro ci = new CreateIntro();
         pdfList.clear();
         try {
-            pdfList.add(ci.createIntro(etl, tempDir));
+            pdfList.add(ci.createIntro(etl, tempDir, localization));
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        pdfList.add(tempDir+"/helper.pdf");
+        pdfList.add(tempDir +"/helper.pdf");
         try {
-            Util.merge(pdfList,tempDir+"/helper2.pdf", null, tempDir);
-        } catch (IOException | DocumentException | ParseException e) {
+            Util.merge(pdfList, tempDir +"/helper2.pdf", null, tempDir);
+        } catch (IOException | DocumentException e) {
             e.printStackTrace();
         }
         try {
-            if (etl != null) {
-                Util.stampPageNo(etl.getEtlNo(), tempDir.toString(), baseDir.toString());
-            }
+            Util.stampPageNo(etl.getEtlNo(), tempDir.toString(), baseDir.toString(), localization);
         } catch (IOException | DocumentException e) {
             e.printStackTrace();
         }
@@ -118,7 +110,25 @@ public class PublishController implements ActionListener {
 
     }
 
-    private static String fileNameInput() {
+    public static void main(String[] args){
+        new PublishController();
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if(view.getStartPublishing() == e.getSource()){
+            this.baseDir = view.getfBaseDir().getCurrentDirectory();
+            this.inputFile = view.getfInputFile().getSelectedFile();
+            this.localization = new Localization(view.getcLang().getSelectedItem().toString());
+            try {
+                publish();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
+
+ /*   private static String fileNameInput() {
         BufferedReader reader =  new BufferedReader(new InputStreamReader(System.in));
         String etlFileName = null;
         boolean fileNamePatternCorrect = false;
@@ -151,21 +161,5 @@ public class PublishController implements ActionListener {
         }
         return etlFileName;
     }
-
-    public static void main(String[] args){
-        new PublishController();
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if(view.getStartPublishing() == e.getSource()){
-            baseDir = view.getfBaseDir().getCurrentDirectory();
-            inputFile = view.getfInputFile().getSelectedFile();
-            try {
-                publish();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        }
-    }
+     */
 }

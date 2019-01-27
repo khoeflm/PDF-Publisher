@@ -11,9 +11,9 @@ import java.util.*;
  * Created by khoef on 21.01.2019.
  */
 public class ETL {
-    String etlNo;
-    ArrayList<ETLRow> etl;
-    HashMap<String, String> contentMap;
+    private String etlNo;
+    private ArrayList<ETLRow> etl;
+    private HashMap<String, String> contentMap;
 
     public ETL(String file){
         int i = file.lastIndexOf("\\");
@@ -25,7 +25,7 @@ public class ETL {
             scanner.useDelimiter("\r\n");
             while (scanner.hasNext()) {
                 String line = scanner.next();
-                line = (line);
+                line = removeNul(line);
                 this.etl.add(new ETLRow(line));
             }
         } catch (IOException e) {
@@ -51,10 +51,6 @@ public class ETL {
         return etl;
     }
 
-    public void setEtl(ArrayList<ETLRow> etl) {
-        this.etl = etl;
-    }
-
     public ArrayList<ETLRow> getItems(int index){
         ArrayList<ETLRow> list = new ArrayList<>();
         for (ETLRow row : etl){
@@ -74,31 +70,28 @@ public class ETL {
                 changeNoList.add(e);
             }
         }
-        changeNoList.sort(new Comparator<ETLRow>() {
-            @Override
-            public int compare(ETLRow o1, ETLRow o2) {
+        changeNoList.sort((o1, o2) -> {
 
-                try {
-                    String year1, year2;
-                    String changeno1 = o1.getChangeno();
-                    String changeno2 = o2.getChangeno();
-                    if(Integer.valueOf(changeno1.substring(1,3)) > 70){
-                        year1 = "19";
-                    } else year1 = "20";
-                    if(Integer.valueOf(changeno2.substring(1,3)) > 70){
-                        year2 = "19";
-                    } else year2 = "20";
-                    String date1 = changeno1.substring(5, 7) + "." + changeno1.substring(3, 5) + "." + year1 + changeno1.substring(1, 3);
-                    String date2 = changeno2.substring(5, 7) + "." + changeno2.substring(3, 5) + "." + year2 + changeno2.substring(1, 3);
+            try {
+                String year1, year2;
+                String changeno1 = o1.getChangeno();
+                String changeno2 = o2.getChangeno();
+                if(Integer.valueOf(changeno1.substring(1,3)) > 70){
+                    year1 = "19";
+                } else year1 = "20";
+                if(Integer.valueOf(changeno2.substring(1,3)) > 70){
+                    year2 = "19";
+                } else year2 = "20";
+                String date1 = changeno1.substring(5, 7) + "." + changeno1.substring(3, 5) + "." + year1 + changeno1.substring(1, 3);
+                String date2 = changeno2.substring(5, 7) + "." + changeno2.substring(3, 5) + "." + year2 + changeno2.substring(1, 3);
 
-                    Date d1 = new SimpleDateFormat("dd.MM.yyyy").parse(date1);
-                    Date d2 = new SimpleDateFormat("dd.MM.yyyy").parse(date2);
-                    return d2.compareTo(d1);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                return 0;
+                Date d1 = new SimpleDateFormat("dd.MM.yyyy").parse(date1);
+                Date d2 = new SimpleDateFormat("dd.MM.yyyy").parse(date2);
+                return d2.compareTo(d1);
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
+            return 0;
         });
         return changeNoList;
     }

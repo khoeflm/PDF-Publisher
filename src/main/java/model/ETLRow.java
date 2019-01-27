@@ -15,7 +15,7 @@ public class ETLRow {
     private String chapter;
     private char itemType;
 
-    public ETLRow(String str) {
+    ETLRow(String str) {
         String[] tokens = str.split("\\|");
         if (tokens.length >5) {
             // Positionsnummer
@@ -48,19 +48,15 @@ public class ETLRow {
         return descriptionLine2;
     }
 
-    public void setDescriptionLine2(String descriptionLine2) {
+    private void setDescriptionLine2(String descriptionLine2) {
         this.descriptionLine2 = descriptionLine2;
-    }
-
-    public void setQty(double qty) {
-        this.qty = qty;
     }
 
     public int getNo() {
         return no;
     }
 
-    public void setNo(int no) {
+    private void setNo(int no) {
         this.no = no;
     }
 
@@ -68,7 +64,7 @@ public class ETLRow {
         return etkz;
     }
 
-    public void setEtkz(char etkz) {
+    private void setEtkz(char etkz) {
         this.etkz = etkz;
     }
 
@@ -84,7 +80,7 @@ public class ETLRow {
         return description;
     }
 
-    public void setDescription(String description) {
+    private void setDescription(String description) {
         this.description = description;
     }
 
@@ -92,7 +88,7 @@ public class ETLRow {
         return qty;
     }
 
-    public void setQty(Double qty) {
+    private void setQty(Double qty) {
         this.qty = qty;
     }
 
@@ -100,7 +96,7 @@ public class ETLRow {
         return changeno;
     }
 
-    public void setChangeno(String changeno) {
+    private void setChangeno(String changeno) {
         this.changeno = changeno;
     }
 
@@ -108,11 +104,11 @@ public class ETLRow {
         return chapter;
     }
 
-    public void setChapter(String chapter) {
+    private void setChapter(String chapter) {
         this.chapter = chapter;
     }
 
-    public void setItemType(char itemType){
+    private void setItemType(char itemType){
         this.itemType = itemType;
     }
 

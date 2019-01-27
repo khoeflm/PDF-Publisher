@@ -6,9 +6,9 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.*;
 import com.itextpdf.layout.property.TextAlignment;
-import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
 import model.ETLRow;
+import util.Localization;
 import util.Util;
 
 import java.io.IOException;
@@ -21,8 +21,8 @@ import java.util.ArrayList;
  */
 public class CreateChapter {
 
-    public String createChapter(ArrayList<ETLRow> etl, Path tempDir) throws IOException, DocumentException {
-        String title = null;
+    public String createChapter(ArrayList<ETLRow> etl, Path tempDir, Localization localization) throws IOException {
+        String title;
         //lade Baugruppenbild
         if (etl.size() > 0 && etl.get(0) != null) {
             String rawFile = tempDir.toString()+"/"+etl.get(0).getNo()+".pdf";
@@ -73,21 +73,20 @@ public class CreateChapter {
             Table table = new Table(pointColumnWidths);
             table.setFontSize(10);
 
-            boolean condition = true;
-
             Cell chapterCell = new Cell(1,6);
             chapterCell.setBorder(Border.NO_BORDER);
             chapterCell.setFontSize(14);
             chapterCell.add(p1);
             table.addHeaderCell(chapterCell);
 
-            table.addHeaderCell(Util.setCell("#",condition,TextAlignment.CENTER, true));
-            table.addHeaderCell(Util.setCell("NEW",condition,TextAlignment.CENTER, true));
-            table.addHeaderCell(Util.setCell("PART#",condition,TextAlignment.CENTER, true));
-            table.addHeaderCell(Util.setCell("DESCRIPTION",condition,TextAlignment.LEFT, true));
-            table.addHeaderCell(Util.setCell("QTY",condition,TextAlignment.CENTER, true));
-            table.addHeaderCell(Util.setCell("CHANGE",condition,TextAlignment.CENTER, true));
+            table.addHeaderCell(Util.setCell(localization.getNum(), true,TextAlignment.CENTER, true));
+            table.addHeaderCell(Util.setCell(localization.getNeu(), true,TextAlignment.CENTER, true));
+            table.addHeaderCell(Util.setCell(localization.getPart(), true,TextAlignment.CENTER, true));
+            table.addHeaderCell(Util.setCell(localization.getDescr(), true,TextAlignment.LEFT, true));
+            table.addHeaderCell(Util.setCell(localization.getQty(), true,TextAlignment.CENTER, true));
+            table.addHeaderCell(Util.setCell(localization.getChange(), true,TextAlignment.CENTER, true));
 
+            boolean condition = true;
             for (ETLRow row : etl) {
                 condition = !condition;
         // Table
@@ -99,7 +98,7 @@ public class CreateChapter {
                     c1.setKeepTogether(true);
                     table.addCell(c1);
         // Column 2 - ReplacementPart New/Existing
-                    Cell c2 = null;
+                    Cell c2;
                     if(row.getEtkz() == 'N') {
                         c2 = Util.setCell("N",condition,TextAlignment.CENTER, false);
                     } else  c2 = Util.setCell("",condition,TextAlignment.CENTER, false);
@@ -121,7 +120,7 @@ public class CreateChapter {
                     c4.setKeepTogether(true);
                     table.addCell(c4);
         // Column 5 - Quantity
-                    Cell c5 = null;
+                    Cell c5;
                     if (row.getQty() == (float) row.getQty()) {
                         c5 = Util.setCell(String.format("%.0f",row.getQty()),condition,TextAlignment.CENTER, false);
                     }else{
@@ -146,30 +145,4 @@ public class CreateChapter {
         }
         return null;
     }
-
- /*   private String stampChapter(String chapter, String rawFile, int originalPageCount) throws IOException, DocumentException {
-        PdfReader readerFinal = new PdfReader(rawFile);
-        int linebreak = chapter.indexOf('\r');
-        String chapterLine2 = null;
-        if(linebreak != -1) chapterLine2 = chapter.substring(linebreak+1);
-        String dest = rawFile.replaceAll("raw", "");
-        PdfStamper stamp = new PdfStamper(readerFinal, new FileOutputStream(dest));
-        PdfContentByte over;
-        int totalPages = readerFinal.getNumberOfPages();
-        if(originalPageCount % 2 != 0) totalPages-- ;
-        for (int i = 1; i <= totalPages; i++) {
-            over = stamp.getOverContent(i);
-            ColumnText.showTextAligned(over, Element.ALIGN_LEFT,
-                    new Phrase(chapter, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14)),
-                    55, PageSize.A4.getHeight() -40, 0);
-            if(chapterLine2 != null){
-                ColumnText.showTextAligned(over, Element.ALIGN_LEFT,
-                        new Phrase(chapterLine2, FontFactory.getFont(FontFactory.HELVETICA, 12)),
-                        55, PageSize.A4.getHeight() -50, 0);
-            }
-        }
-        stamp.close();
-        readerFinal.close();
-        return dest;
-    }*/
 }
