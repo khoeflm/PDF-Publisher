@@ -14,12 +14,13 @@ public class ETLRow {
     private String changeno;
     private String chapter;
     private char itemType;
+    public static final String UTF8_BOM = "\uFEFF";
 
-    ETLRow(String str) {
+    ETLRow(String str) throws NumberFormatException{
         String[] tokens = str.split("\\|");
         if (tokens.length >5) {
             // Positionsnummer
-            setNo(Integer.parseInt(tokens[0]));
+            setNo(Integer.parseInt(removeUTF8BOM(tokens[0])));
             // Teilenummer(Material)
             setPartno(tokens[1]);
             // Beschreibung
@@ -56,7 +57,7 @@ public class ETLRow {
         return no;
     }
 
-    private void setNo(int no) {
+    private void setNo(int no) throws NumberFormatException {
         this.no = no;
     }
 
@@ -114,5 +115,13 @@ public class ETLRow {
 
     public char getItemType() {
         return itemType;
+    }
+
+    private static String removeUTF8BOM(String s) {
+        s.replaceAll("[^0-9]", "");
+        if(s.length() > 4){
+           s = s.substring(3);
+        }
+        return s;
     }
 }

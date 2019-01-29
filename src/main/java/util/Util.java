@@ -72,6 +72,7 @@ public class Util {
                     }
                 }
             }
+            f.delete();
         }
     }
 

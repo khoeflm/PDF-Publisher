@@ -25,7 +25,7 @@ public class Localization {
 
     public Localization(String lang){
         Locale.setDefault(new Locale(lang));
-        ResourceBundle langBundle = ResourceBundle.getBundle("MessagesBundle");
+        ResourceBundle langBundle = ResourceBundle.getBundle("internationalization/MessagesBundle");
 
         inhalt = langBundle.getString("inhalt");
         revision = langBundle.getString("revision");

@@ -1,10 +1,13 @@
 package model;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Scanner;
 
 /**
  * PDF Publisher
@@ -15,24 +18,18 @@ public class ETL {
     private ArrayList<ETLRow> etl;
     private HashMap<String, String> contentMap;
 
-    public ETL(String file){
+    public ETL(String file) throws FileNotFoundException, NumberFormatException{
         int i = file.lastIndexOf("\\");
         etlNo = file.substring(i+1,i+8).toUpperCase();
-        try {
-            this.contentMap = new HashMap<>();
-            etl = new ArrayList<>();
-            Scanner scanner = new Scanner(new File(file));
-            scanner.useDelimiter("\r\n");
-            while (scanner.hasNext()) {
-                String line = scanner.next();
-                line = removeNul(line);
-                this.etl.add(new ETLRow(line));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        this.contentMap = new HashMap<>();
+        etl = new ArrayList<>();
+        Scanner scanner = new Scanner(new File(file));
+        scanner.useDelimiter("\r\n");
+        while (scanner.hasNext()) {
+            String line = scanner.next();
+            line = removeNul(line);
+            this.etl.add(new ETLRow(line));
         }
-
-
     }
 
     private String removeNul(String s) {
@@ -66,7 +63,7 @@ public class ETL {
     public ArrayList<ETLRow> getSortedChangeNoList() {
         ArrayList<ETLRow> changeNoList = new ArrayList<>();
         for(ETLRow e : etl) {
-            if (!e.getChangeno().isEmpty()) {
+            if (!e.getChangeno().isEmpty() && e.getNo() % 100 != 0) {
                 changeNoList.add(e);
             }
         }

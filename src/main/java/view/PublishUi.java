@@ -13,8 +13,8 @@ public class PublishUi extends JFrame {
 
     private JButton startPublishing = new JButton("PDF erstellen");
     private JFileChooser fInputFile = new JFileChooser();
-    private JFileChooser fBaseDir = new JFileChooser();
     private JComboBox cLang = new JComboBox();
+    private JTextArea tErrorBox = new JTextArea();
 
     public PublishUi(PublishController controller){
         try {
@@ -28,30 +28,30 @@ public class PublishUi extends JFrame {
                 BorderLayout.PAGE_START);
 
         fInputFile.setControlButtonsAreShown(false);
-        fBaseDir.setControlButtonsAreShown(false);
         cLang.addItem("EN");
         cLang.addItem("DE");
+        tErrorBox.setRows(5);
+        tErrorBox.setSize(600,60);
 
         JPanel centerPane = new JPanel();
-        centerPane.setLayout(new GridLayout(2,2));
+        centerPane.setLayout(new BoxLayout(centerPane, BoxLayout.PAGE_AXIS));
         JLabel lInputFile = new JLabel("Eingabefile: ");
         centerPane.add(lInputFile);
         centerPane.add(fInputFile);
-        JLabel lBaseDir = new JLabel("Ausgabepfad: ");
+        JLabel lBaseDir = new JLabel("Ausgabesprache: ");
         centerPane.add(lBaseDir);
-        centerPane.add(fBaseDir);
+        centerPane.add(cLang);
+        centerPane.add(tErrorBox);
         container.add(centerPane, BorderLayout.CENTER);
 
-
         JPanel bottomPane = new JPanel();
-        bottomPane.setLayout(new FlowLayout());
         bottomPane.add(startPublishing);
         startPublishing.addActionListener(controller);
         container.add(bottomPane, BorderLayout.PAGE_END);
 
         setTitle("PDF-Publisher");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        container.setPreferredSize(new Dimension(900, 900));
+        container.setPreferredSize(new Dimension(700, 500));
         pack();
         setVisible(true);
 
@@ -61,15 +61,20 @@ public class PublishUi extends JFrame {
         return startPublishing;
     }
 
-    public JFileChooser getfBaseDir() {
-        return fBaseDir;
-    }
-
     public JFileChooser getfInputFile() {
         return fInputFile;
     }
 
     public JComboBox getcLang() {
         return cLang;
+    }
+
+    public JTextArea gettErrorBox() {
+        return tErrorBox;
+    }
+
+    public void setErrorText(String error){
+        this.tErrorBox.append(error);
+        this.tErrorBox.append("\n");
     }
 }

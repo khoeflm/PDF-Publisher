@@ -62,7 +62,7 @@ public class CreateIntro {
         } else if(fileformat.equalsIgnoreCase("jpg")){
             String dest = tempDir + "/COVER.pdf";
             Document doc = Util.createPdf(dest);
-            String imgFile = "raw/"+coverName;
+            String imgFile = tempDir+"/"+coverName;
             ImageData data = ImageDataFactory.create(imgFile);
             Image image = new Image(data);
             image.setFixedPosition(0,0);
@@ -104,58 +104,60 @@ public class CreateIntro {
         String oldChangeNo = "";
         Cell c1 = null, c2 = null, c3 = null, c4 = null, c5 = null, c6 = null;
         String s1 = null, s2 = null, s3 = null, s4 = null, s5 = null, s6 = null;
-        for (ETLRow row : etl.getSortedChangeNoList()){
-            if (row.getChangeno() != null && !row.getChangeno().isEmpty() && row.getNo() % 100 != 0 && row.getNo() != 10){
-                if(!row.getChangeno().equals(oldChangeNo)) {
-                    if(oldChangeNo != "") {
-                        c1 = Util.setCell(s1, condition, TextAlignment.CENTER, false);
-                        c2 = Util.setCell(s2, condition, TextAlignment.CENTER, false);
-                        c3 = Util.setCell(s3, condition, TextAlignment.CENTER, false);
-                        c4 = Util.setCell(s4, condition, TextAlignment.CENTER, false);
-                        c5 = Util.setCell(s5, condition, TextAlignment.CENTER, false);
-                        c6 = Util.setCell(s6, condition, TextAlignment.LEFT, false);
-                        condition = !condition;
-                        oldChangeNo = row.getChangeno();
+        if(etl.getSortedChangeNoList().size() > 0) {
+            for (ETLRow row : etl.getSortedChangeNoList()) {
+                if (row.getChangeno() != null && !row.getChangeno().isEmpty() && row.getNo() % 100 != 0 && row.getNo() != 10) {
+                    if (!row.getChangeno().equals(oldChangeNo)) {
+                        if (oldChangeNo != "") {
+                            c1 = Util.setCell(s1, condition, TextAlignment.CENTER, false);
+                            c2 = Util.setCell(s2, condition, TextAlignment.CENTER, false);
+                            c3 = Util.setCell(s3, condition, TextAlignment.CENTER, false);
+                            c4 = Util.setCell(s4, condition, TextAlignment.CENTER, false);
+                            c5 = Util.setCell(s5, condition, TextAlignment.CENTER, false);
+                            c6 = Util.setCell(s6, condition, TextAlignment.LEFT, false);
+                            condition = !condition;
+                            oldChangeNo = row.getChangeno();
                             table.addCell(c1);
                             table.addCell(c2);
                             table.addCell(c3);
                             table.addCell(c4);
                             table.addCell(c5);
                             table.addCell(c6);
+                        }
+                        s1 = String.valueOf(row.getChangeno());
+                        s2 = Util.parseDate(row.getChangeno());
+                        s3 = row.getChapter().substring(0, 2).replaceFirst("^0+(?!$)", "");
+                        int l = String.valueOf(row.getNo()).length();
+                        s4 = String.valueOf(row.getNo()).substring(l - 2, l).replaceFirst("^0+(?!$)", "");
+                        s5 = row.getPartno();
+                        s6 = row.getDescription();
+                        oldChangeNo = row.getChangeno();
+                    } else {
+                        s1 = String.valueOf(row.getChangeno());
+                        s2 = Util.parseDate(row.getChangeno());
+                        s3 = s3 + "\r\n" + row.getChapter().substring(0, 2).replaceFirst("^0+(?!$)", "");
+                        int l = String.valueOf(row.getNo()).length();
+                        s4 = s4 + "\r\n" + String.valueOf(row.getNo()).substring(l - 2, l).replaceFirst("^0+(?!$)", "");
+                        s5 = s5 + "\r\n" + row.getPartno();
+                        s6 = s6 + "\r\n" + row.getDescription();
+                        oldChangeNo = row.getChangeno();
                     }
-                    s1= String.valueOf(row.getChangeno());
-                    s2 = Util.parseDate(row.getChangeno());
-                    s3 = row.getChapter().substring(0, 2).replaceFirst("^0+(?!$)", "");
-                    int l = String.valueOf(row.getNo()).length();
-                    s4 = String.valueOf(row.getNo()).substring(l - 2, l).replaceFirst("^0+(?!$)", "");
-                    s5 = row.getPartno();
-                    s6 = row.getDescription();
-                    oldChangeNo = row.getChangeno();
-                }else{
-                    s1= String.valueOf(row.getChangeno());
-                    s2 = Util.parseDate(row.getChangeno());
-                    s3 = s3 + "\r\n" + row.getChapter().substring(0, 2).replaceFirst("^0+(?!$)", "");
-                    int l = String.valueOf(row.getNo()).length();
-                    s4 = s4 + "\r\n" + String.valueOf(row.getNo()).substring(l - 2, l).replaceFirst("^0+(?!$)", "");
-                    s5 = s5 + "\r\n" + row.getPartno();
-                    s6 = s6 + "\r\n" + row.getDescription();
-                    oldChangeNo = row.getChangeno();
                 }
             }
-        }
-        c1 = Util.setCell(s1, condition, TextAlignment.CENTER, false);
-        c2 = Util.setCell(s2, condition, TextAlignment.CENTER, false);
-        c3 = Util.setCell(s3, condition, TextAlignment.CENTER, false);
-        c4 = Util.setCell(s4, condition, TextAlignment.CENTER, false);
-        c5 = Util.setCell(s5, condition, TextAlignment.CENTER, false);
-        c6 = Util.setCell(s6, condition, TextAlignment.LEFT, false);
-        table.addCell(c1);
-        table.addCell(c2);
-        table.addCell(c3);
-        table.addCell(c4);
-        table.addCell(c5);
-        table.addCell(c6);
 
+            c1 = Util.setCell(s1, condition, TextAlignment.CENTER, false);
+            c2 = Util.setCell(s2, condition, TextAlignment.CENTER, false);
+            c3 = Util.setCell(s3, condition, TextAlignment.CENTER, false);
+            c4 = Util.setCell(s4, condition, TextAlignment.CENTER, false);
+            c5 = Util.setCell(s5, condition, TextAlignment.CENTER, false);
+            c6 = Util.setCell(s6, condition, TextAlignment.LEFT, false);
+            table.addCell(c1);
+            table.addCell(c2);
+            table.addCell(c3);
+            table.addCell(c4);
+            table.addCell(c5);
+            table.addCell(c6);
+        }
         document.add(table);
         document.close();
         return dest;

@@ -1,16 +1,17 @@
 package util;
 
-import com.itextpdf.licensekey.LicenseKey;
 import com.itextpdf.text.DocumentException;
 import controller.CreateChapter;
 import controller.CreateIntro;
 import model.ETL;
+import model.ETLRow;
 import org.apache.commons.io.FileUtils;
 import view.PublishUi;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,86 +29,98 @@ public class PublishController implements ActionListener {
     private static File baseDir;
     private static File inputFile;
     private Localization localization;
+    private ArrayList<String> docFiles;
+    int error = 0;
 
     private PublishController(){
         view = new PublishUi(this);
     }
 
-    private void publish() throws IOException {
-        Path tempDir = Paths.get(System.getProperty("java.io.tmpdir") + "/pdf_publisher/");
-        LicenseKey.loadLicenseFile(PublishController.class.getResourceAsStream("/testkey.xml"));
-
-
-       /* System.out.println("*************************************************************");
-        System.out.println("********************    PDF Publisher    ********************");
-        System.out.println("*************************************************************");
-        System.out.println();
-        System.out.println("Vollständigen Pfad inkl. Filename und Fileendung angeben");
-        System.out.print("ETL: ");
-
-        String etlFileName = fileNameInput();*/
+    private void publish() {
 
         ArrayList<String> pdfList = new ArrayList<>();
-        ETL etl;
-        String etlFileName = inputFile.toString();
+        ETL etl = null;
+        String etlFileFullPath = inputFile.toString();
 
-        String[] files;
-        int index = etlFileName.lastIndexOf('\\');
-        etlFileName = etlFileName.toUpperCase();
+        this.docFiles = new ArrayList<>();
+        int index = etlFileFullPath.lastIndexOf('\\');
+        etlFileFullPath = etlFileFullPath.toUpperCase();
 
-        baseDir = new File(etlFileName.substring(0, index));
-        if (baseDir.isDirectory()){
-            files = baseDir.list();
-            if (files != null) {
-                for (String file : files) {
-                    String fileFilter = etlFileName.substring(index+1, etlFileName.lastIndexOf('.'));
-                    if(file.contains(fileFilter)){
+        Path tempDir = Paths.get(System.getProperty("java.io.tmpdir") + "/pdf_publisher/" +
+                etlFileFullPath.substring(index + 1, etlFileFullPath.lastIndexOf('.')));
+
+        try {
+            etl = new ETL(etlFileFullPath);
+        } catch (FileNotFoundException | NumberFormatException e) {
+            view.setErrorText("Probleme beim Öffnen des CSV Files. " +
+                    e.getMessage());
+        }
+
+        for(ETLRow documentRow : etl.getEtl()){
+            if((documentRow.getNo() == 10 || documentRow.getNo() % 100 == 0) && documentRow.getItemType() == 'D'){
+                String fullDocPath = documentRow.getDescriptionLine2();
+                int fileNameIndex = fullDocPath.lastIndexOf('\\');
+                String docFileName = documentRow.getDescriptionLine2().substring(fileNameIndex+1);
+                docFiles.add(docFileName);
+            }
+        }
+
+        this.baseDir = new File(etlFileFullPath.substring(0, index));
+        if (baseDir.isDirectory()) {
+            if (docFiles != null) {
+                for (String file : docFiles) {
+                    try {
                         FileUtils.moveFile(new File(baseDir + "\\" + file), new File(tempDir + "/" + file));
+                    } catch (IOException e) {
+                        view.setErrorText("Probleme beim Verschieben der Files ins Working Directory");
+                        e.printStackTrace();
                     }
                 }
             }
         }
 
-        etl = new ETL(etlFileName);
-
-        CreateChapter cc = new CreateChapter();
-        ArrayList chapterItems = new ArrayList();
-        for(int i=100; i<=9999; i++){
-            if(i!=100 && i%100==0){
-                try {
-                    pdfList.add(cc.createChapter(chapterItems, tempDir, localization));
-                } catch (IOException e) {
-                    e.printStackTrace();
+        if (error == 0) {
+            CreateChapter cc = new CreateChapter();
+            ArrayList chapterItems = new ArrayList();
+            for (int i = 100; i <= 9999; i++) {
+                if (i != 100 && i % 100 == 0) {
+                    try {
+                        pdfList.add(cc.createChapter(chapterItems, tempDir, localization));
+                    } catch (IOException e) {
+                        view.setErrorText("Fehler beim Laden einer Baugruppenzeichnung: " +
+                                e.getMessage());
+                    }
+                    chapterItems = new ArrayList<>();
                 }
-                chapterItems = new ArrayList<>();
+                chapterItems.addAll(etl.getItems(i));
             }
-            chapterItems.addAll(etl.getItems(i));
-        }
-        try {
-            Util.merge(pdfList, tempDir +"/helper.pdf", etl.getContentMap(), tempDir);
-        } catch (IOException | DocumentException e) {
-            e.printStackTrace();
-        }
-        CreateIntro ci = new CreateIntro();
-        pdfList.clear();
-        try {
-            pdfList.add(ci.createIntro(etl, tempDir, localization));
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        pdfList.add(tempDir +"/helper.pdf");
-        try {
-            Util.merge(pdfList, tempDir +"/helper2.pdf", null, tempDir);
-        } catch (IOException | DocumentException e) {
-            e.printStackTrace();
-        }
-        try {
-            Util.stampPageNo(etl.getEtlNo(), tempDir.toString(), baseDir.toString(), localization);
-        } catch (IOException | DocumentException e) {
-            e.printStackTrace();
-        }
-        Util.removeTmpFiles(tempDir);
+            try {
+                Util.merge(pdfList, tempDir + "/helper.pdf", etl.getContentMap(), tempDir);
+            } catch (IOException | DocumentException e) {
+                view.setErrorText("Fehler beim Zusammenhängen der Kapitel!");
+            }
+            CreateIntro ci = new CreateIntro();
+            pdfList.clear();
+            try {
+                pdfList.add(ci.createIntro(etl, tempDir, localization));
+            } catch (ParseException e) {
+                view.setErrorText("Fehler beim Erstellen der Einleitung");
+            }
+            pdfList.add(tempDir + "/helper.pdf");
+            try {
+                Util.merge(pdfList, tempDir + "/helper2.pdf", null, tempDir);
+            } catch (IOException | DocumentException e) {
+                view.setErrorText("Fehler beim Zusammenbau des PDFs");
+            }
+            try {
+                Util.stampPageNo(etl.getEtlNo(), tempDir.toString(), baseDir.toString(), localization);
+                view.setErrorText("PDF erstellt in: " + baseDir.toString());
+            } catch (IOException | DocumentException e) {
+                view.setErrorText("Fehler beim Andrucken der Fußzeile!");
+            }
+            Util.removeTmpFiles(tempDir);
 
+        }
     }
 
     public static void main(String[] args){
@@ -117,14 +130,10 @@ public class PublishController implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if(view.getStartPublishing() == e.getSource()){
-            this.baseDir = view.getfBaseDir().getCurrentDirectory();
+            view.setErrorText("");
             this.inputFile = view.getfInputFile().getSelectedFile();
             this.localization = new Localization(view.getcLang().getSelectedItem().toString());
-            try {
-                publish();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
+            publish();
         }
     }
 

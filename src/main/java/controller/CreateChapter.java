@@ -47,6 +47,7 @@ public class CreateChapter {
             p1.add(t1);
             if(titleLine2 != null) {
                 Text t2 = new Text(titleLine2);
+                t2.setFontSize(12);
                 p1.add(t2);
             }
             doc.add(p1);
@@ -56,6 +57,7 @@ public class CreateChapter {
             String imgFileName = tempDir + "" + imgPath.substring(index,imgPath.length());
             ImageData data = ImageDataFactory.create(imgFileName);
 
+
             // Creating an Image object
             Image image = new Image(data);
 
@@ -64,6 +66,8 @@ public class CreateChapter {
             float x = (PageSize.A4.getWidth() - image.getImageScaledWidth())/2;
             float y = (PageSize.A4.getHeight() - image.getImageScaledHeight())/2;
             image.setFixedPosition(x, y);
+            image.setAutoScaleHeight(true);
+            image.setAutoScaleWidth(true);
 
             doc.add(image);
             doc.add(new AreaBreak());
@@ -75,7 +79,6 @@ public class CreateChapter {
 
             Cell chapterCell = new Cell(1,6);
             chapterCell.setBorder(Border.NO_BORDER);
-            chapterCell.setFontSize(14);
             chapterCell.add(p1);
             table.addHeaderCell(chapterCell);
 
