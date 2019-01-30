@@ -18,6 +18,9 @@
       <element id="archive" name="pdf_publish.jar">
         <element id="module-output" name="pdf_publish" />
       </element>
+      <element id="directory" name="res">
+        <element id="dir-copy" path="$PROJECT_DIR$/internationalization" />
+      </element>
     </root>
   </artifact>
 </component>

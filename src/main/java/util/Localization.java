@@ -1,7 +1,9 @@
 package util;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.Properties;
 
 /**
  * SemNOTAM Project (User Interface)
@@ -23,23 +25,36 @@ public class Localization {
     private String qty;
     private String neu;
 
-    public Localization(String lang){
+    public Localization(String lang) throws IOException {
         Locale.setDefault(new Locale(lang));
-        ResourceBundle langBundle = ResourceBundle.getBundle("internationalization/MessagesBundle");
+  //      ResourceBundle langBundle = ResourceBundle.getBundle("internationalization/MessagesBundle");
 
-        inhalt = langBundle.getString("inhalt");
-        revision = langBundle.getString("revision");
-        copyright = langBundle.getString("copyright");
-        update = langBundle.getString("update");
-        page = langBundle.getString("page");
-        chapter = langBundle.getString("chapter");
-        date = langBundle.getString("date");
-        change = langBundle.getString("change");
-        num = langBundle.getString("num");
-        part = langBundle.getString("part");
-        descr = langBundle.getString("descr");
-        qty = langBundle.getString("qty");
-        neu = langBundle.getString("neu");
+        //to load application's properties, we use this class
+        Properties mainProperties = new Properties();
+        FileInputStream file;
+
+        //the base folder is ./, the root of the main.properties file
+        String filename = "/internationalization/MessagesBundle_"+lang+".properties";
+        String path = "./"+filename;
+
+        //load the file handle for main.properties
+        file = new FileInputStream(path);
+        mainProperties.load(file);
+        file.close();
+
+        inhalt = mainProperties.getProperty("inhalt");
+        copyright = mainProperties.getProperty("copyright");
+        update = mainProperties.getProperty("update");
+        page = mainProperties.getProperty("page");
+        chapter = mainProperties.getProperty("chapter");
+        date = mainProperties.getProperty("date");
+        change = mainProperties.getProperty("change");
+        num = mainProperties.getProperty("num");
+        part = mainProperties.getProperty("part");
+        descr = mainProperties.getProperty("descr");
+        qty = mainProperties.getProperty("qty");
+        neu = mainProperties.getProperty("neu");
+        revision = mainProperties.getProperty("revision");
     }
 
     public String getInhalt() {

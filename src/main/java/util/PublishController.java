@@ -10,9 +10,7 @@ import view.PublishUi;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
@@ -132,43 +130,32 @@ public class PublishController implements ActionListener {
         if(view.getStartPublishing() == e.getSource()){
             view.setErrorText("");
             this.inputFile = view.getfInputFile().getSelectedFile();
-            this.localization = new Localization(view.getcLang().getSelectedItem().toString());
-            publish();
+            if(fileIsValid(inputFile.getName())) {
+                try {
+                    this.localization = new Localization(view.getcLang().getSelectedItem().toString());
+                } catch (IOException e1) {
+                    view.setErrorText("Sprachdateien können nicht gefunden werden");
+                }
+                publish();
+            }
         }
     }
 
- /*   private static String fileNameInput() {
-        BufferedReader reader =  new BufferedReader(new InputStreamReader(System.in));
-        String etlFileName = null;
+    private boolean fileIsValid(String filename) {
         boolean fileNamePatternCorrect = false;
-        while(!fileNamePatternCorrect) {
-            try {
-                etlFileName = reader.readLine();
-                int lastDelimiter = etlFileName.lastIndexOf('\\');
-                if (lastDelimiter == -1) {
-                    lastDelimiter = etlFileName.lastIndexOf('/');
-                    if(lastDelimiter == -1){
-                        System.out.println("Keine Pfadangabe - Bitte einen Filepfad angeben:");
-                    }
-                }
-                int fileTypeStart = etlFileName.lastIndexOf('.');
-                if (lastDelimiter != -1 && fileTypeStart != -1) {
-                    String fileType = etlFileName.substring(fileTypeStart + 1);
-                    if (fileType.equalsIgnoreCase("csv") ||
-                            fileType.equalsIgnoreCase("txt")) {
-                        String filename = etlFileName.substring(lastDelimiter + 1, fileTypeStart);
-                        if (filename.substring(1, 4).equalsIgnoreCase("ETL")) {
-                            System.out.println("Der Dateiname startet nicht mit 'ETL'! Bitte richtigen Pfad angeben: ");
-                        } else fileNamePatternCorrect = true;
-                    } else{
-                        System.out.println("Falscher Dateityp! Bitte richtigen Pfad angeben: ");
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+        int fileTypeStart = filename.lastIndexOf('.');
+        String fileType = filename.substring(fileTypeStart + 1);
+        if (fileType.equalsIgnoreCase("csv") ||
+                fileType.equalsIgnoreCase("txt")){
+            String suffix = filename.substring(0,3);
+            if (suffix.equalsIgnoreCase("ETL")){
+                return true;
+            } else {
+                view.setErrorText("Der Dateiname startet nicht mit 'ETL'!");
             }
+        } else {
+            view.setErrorText("Falscher Dateityp. Bitte ein CSV File auswählen");
         }
-        return etlFileName;
+        return false;
     }
-     */
 }
