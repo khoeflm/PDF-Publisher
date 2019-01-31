@@ -23,6 +23,9 @@
             <resource>
                 <directory>licenceKey</directory>
             </resource>
+            <resource>
+                <directory>../config/languages</directory>
+            </resource>
         </resources>
         <plugins>
             <plugin>

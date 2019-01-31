@@ -133,10 +133,11 @@ public class PublishController implements ActionListener {
             if(fileIsValid(inputFile.getName())) {
                 try {
                     this.localization = new Localization(view.getcLang().getSelectedItem().toString());
+                    publish();
                 } catch (IOException e1) {
-                    view.setErrorText("Sprachdateien können nicht gefunden werden");
+                    e1.printStackTrace();
                 }
-                publish();
+
             }
         }
     }

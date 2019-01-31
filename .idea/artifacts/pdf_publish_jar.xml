@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
   <artifact name="pdf_publish:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/pdf_publish_jar</output-path>
+    <output-path>$PROJECT_DIR$/out/artifacts/pdf_publisher</output-path>
     <root id="root">
       <element id="directory" name="libs">
         <element id="file-copy" path="$MAVEN_REPOSITORY$/org/bouncycastle/bcpkix-jdk15on/1.49/bcpkix-jdk15on-1.49.jar" />
@@ -18,8 +18,11 @@
       <element id="archive" name="pdf_publish.jar">
         <element id="module-output" name="pdf_publish" />
       </element>
-      <element id="directory" name="res">
-        <element id="dir-copy" path="$PROJECT_DIR$/internationalization" />
+      <element id="directory" name="config">
+        <element id="directory" name="languages">
+          <element id="file-copy" path="$PROJECT_DIR$/config/languages/MessagesBundle_de.properties" />
+          <element id="file-copy" path="$PROJECT_DIR$/config/languages/MessagesBundle_en.properties" />
+        </element>
       </element>
     </root>
   </artifact>
