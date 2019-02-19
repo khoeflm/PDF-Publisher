@@ -14,6 +14,7 @@ public class PublishUi extends JFrame {
     private JButton startPublishing = new JButton("PDF erstellen");
     private JFileChooser fInputFile = new JFileChooser();
     private JComboBox cLang = new JComboBox();
+    private JSpinner nScaleFactor = new JSpinner();
     private JTextArea tErrorBox = new JTextArea();
 
     public PublishUi(PublishController controller){
@@ -27,6 +28,7 @@ public class PublishUi extends JFrame {
         container.add(new JLabel("Erstellen Sie aus einem Rohfile ein ETL PDF", SwingConstants.CENTER),
                 BorderLayout.PAGE_START);
 
+        nScaleFactor.setModel(new SpinnerNumberModel(100, 0, 100, 1));
         fInputFile.setControlButtonsAreShown(false);
         cLang.addItem("EN");
         cLang.addItem("DE");
@@ -41,6 +43,7 @@ public class PublishUi extends JFrame {
         JLabel lBaseDir = new JLabel("Ausgabesprache: ");
         centerPane.add(lBaseDir);
         centerPane.add(cLang);
+        centerPane.add(nScaleFactor);
         centerPane.add(tErrorBox);
         container.add(centerPane, BorderLayout.CENTER);
 
@@ -72,6 +75,8 @@ public class PublishUi extends JFrame {
     public JTextArea gettErrorBox() {
         return tErrorBox;
     }
+
+    public int getnScaleFactor(){ return (int) nScaleFactor.getValue(); }
 
     public void setErrorText(String error){
         this.tErrorBox.append(error);

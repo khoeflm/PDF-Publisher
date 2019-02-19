@@ -29,6 +29,7 @@ public class PublishController implements ActionListener {
     private Localization localization;
     private ArrayList<String> docFiles;
     int error = 0;
+    private int scaleFactor;
 
     private PublishController(){
         view = new PublishUi(this);
@@ -83,7 +84,7 @@ public class PublishController implements ActionListener {
             for (int i = 100; i <= 9999; i++) {
                 if (i != 100 && i % 100 == 0) {
                     try {
-                        pdfList.add(cc.createChapter(chapterItems, tempDir, localization));
+                        pdfList.add(cc.createChapter(chapterItems, tempDir, localization, scaleFactor));
                     } catch (IOException e) {
                         view.setErrorText("Fehler beim Laden einer Baugruppenzeichnung: " +
                                 e.getMessage());
@@ -130,6 +131,7 @@ public class PublishController implements ActionListener {
         if(view.getStartPublishing() == e.getSource()){
             view.setErrorText("");
             this.inputFile = view.getfInputFile().getSelectedFile();
+            this.scaleFactor = view.getnScaleFactor();
             if(fileIsValid(inputFile.getName())) {
                 try {
                     this.localization = new Localization(view.getcLang().getSelectedItem().toString());
