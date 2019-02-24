@@ -3,10 +3,7 @@ package controller;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Cell;
-import com.itextpdf.layout.element.Image;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.element.*;
 import com.itextpdf.layout.property.TextAlignment;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
@@ -67,8 +64,6 @@ public class CreateIntro {
             Image image = new Image(data);
             image.setFixedPosition(0,0);
             image.scaleToFit(PageSize.A4.getWidth(), PageSize.A4.getHeight());
-
-
 
             doc.add(image);
             doc.close();
@@ -159,6 +154,11 @@ public class CreateIntro {
             table.addCell(c6);
         }
         document.add(table);
+
+        int i = document.getPdfDocument().getNumberOfPages();
+        if(i % 2 == 0){
+            document.add(new AreaBreak());
+        }
         document.close();
         return dest;
     }
@@ -196,6 +196,10 @@ public class CreateIntro {
             }
         }
         document.add(table);
+        int i = document.getPdfDocument().getNumberOfPages();
+        if(i % 2 == 0){
+            document.add(new AreaBreak());
+        }
         document.close();
         return dest;
 

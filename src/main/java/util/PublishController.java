@@ -84,10 +84,11 @@ public class PublishController implements ActionListener {
             for (int i = 100; i <= 9999; i++) {
                 if (i != 100 && i % 100 == 0) {
                     try {
-                        pdfList.add(cc.createChapter(chapterItems, tempDir, localization, scaleFactor));
+                        pdfList.add(cc.createChapter(chapterItems, tempDir, localization, scaleFactor, view));
                     } catch (IOException e) {
                         view.setErrorText("Fehler beim Laden einer Baugruppenzeichnung: " +
                                 e.getMessage());
+                        e.printStackTrace();
                     }
                     chapterItems = new ArrayList<>();
                 }

@@ -1,5 +1,6 @@
 package controller;
 
+import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.Border;
@@ -10,6 +11,7 @@ import com.itextpdf.text.PageSize;
 import model.ETLRow;
 import util.Localization;
 import util.Util;
+import view.PublishUi;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -26,7 +28,7 @@ import java.util.ArrayList;
  */
 public class CreateChapter {
 
-    public String createChapter(ArrayList<ETLRow> etl, Path tempDir, Localization localization, int scaleFactor)
+    public String createChapter(ArrayList<ETLRow> etl, Path tempDir, Localization localization, int scaleFactor, PublishUi view)
             throws IOException {
         String title;
         //lade Baugruppenbild
@@ -61,13 +63,20 @@ public class CreateChapter {
             String imgPath = etl.get(0).getDescriptionLine2();
             int index = imgPath.lastIndexOf('\\');
             String imgFileName = tempDir + "" + imgPath.substring(index,imgPath.length());
-        //    ImageData data = ImageDataFactory.create(imgFileName);
 
-
-            // Creating an Image object
-        //    Image image = new Image(data);
-            Image image = getImage(imgFileName, scaleFactor);
-
+            Image image = null;
+            try {
+                if(scaleFactor != 100) {
+                    image = getImage(imgFileName, scaleFactor);
+                } else {
+                    ImageData data = ImageDataFactory.create(imgFileName);
+                    image = new Image(data);
+                }
+            } catch (IOException e) {
+                ImageData data = ImageDataFactory.create(imgFileName);
+                image = new Image(data);
+                view.setErrorText("Bildskalierung bei " + imgPath.substring(index,imgPath.length()) + " nicht möglich!");
+            }
 
             image.scaleToFit(PageSize.A4.getWidth()-120, PageSize.A4.getHeight()-120);
             float x = (PageSize.A4.getWidth() - image.getImageScaledWidth())/2;
