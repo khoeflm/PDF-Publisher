@@ -73,6 +73,7 @@ public class PublishController implements ActionListener {
                     } catch (IOException e) {
                         view.setErrorText("Probleme beim Verschieben der Files ins Working Directory");
                         e.printStackTrace();
+                        Util.removeTmpFiles(tempDir);
                     }
                 }
             }
@@ -89,6 +90,7 @@ public class PublishController implements ActionListener {
                         view.setErrorText("Fehler beim Laden einer Baugruppenzeichnung: " +
                                 e.getMessage());
                         e.printStackTrace();
+                        Util.removeTmpFiles(tempDir);
                     }
                     chapterItems = new ArrayList<>();
                 }

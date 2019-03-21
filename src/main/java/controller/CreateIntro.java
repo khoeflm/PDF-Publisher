@@ -83,7 +83,7 @@ public class CreateIntro {
         document.add(paragraph);
 
         // Creating a table
-        float[] pointColumnWidths = {70F, 70F, 70F, 25F, 70F, 310F};
+        float[] pointColumnWidths = {50F, 50F, 70F, 25F, 70F, 340F};
         Table table = new Table(pointColumnWidths);        // Add elements to the list
         table.setFontSize(9);
         table.addHeaderCell(Util.setCell(localization.getChange(), true, TextAlignment.CENTER, true));
@@ -111,7 +111,6 @@ public class CreateIntro {
                             c5 = Util.setCell(s5, condition, TextAlignment.CENTER, false);
                             c6 = Util.setCell(s6, condition, TextAlignment.LEFT, false);
                             condition = !condition;
-                            oldChangeNo = row.getChangeno();
                             table.addCell(c1);
                             table.addCell(c2);
                             table.addCell(c3);
@@ -136,6 +135,11 @@ public class CreateIntro {
                         s5 = s5 + "\r\n" + row.getPartno();
                         s6 = s6 + "\r\n" + row.getDescription();
                         oldChangeNo = row.getChangeno();
+                        if( row.getDescription().length() > 40){
+                            s3 = s3 + "\r\n";
+                            s4 = s4 + "\r\n";
+                            s5 = s5 + "\r\n";
+                        }
                     }
                 }
             }
