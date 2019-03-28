@@ -31,8 +31,8 @@ public class CreateChapter {
     public String createChapter(ArrayList<ETLRow> etl, Path tempDir, Localization localization, int scaleFactor, PublishUi view)
             throws IOException {
         String title;
-        //lade Baugruppenbild
         if (etl.size() > 0 && etl.get(0) != null) {
+            //lade Baugruppenbild
             String rawFile = tempDir.toString()+"/"+etl.get(0).getNo()+".pdf";
             Document doc = Util.createPdf(rawFile);
 

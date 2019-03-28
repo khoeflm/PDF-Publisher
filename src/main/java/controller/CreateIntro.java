@@ -41,11 +41,7 @@ public class CreateIntro {
             pdfList.add(loadTOR(etl, tempDir.toString(), localization));
             pdfList.add(loadTOC(etl, tempDir.toString(), localization));
             Util.merge(pdfList, dest, null, tempDir);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (DocumentException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (DocumentException | IOException e) {
             e.printStackTrace();
         }
         return dest;
@@ -103,20 +99,8 @@ public class CreateIntro {
             for (ETLRow row : etl.getSortedChangeNoList()) {
                 if (row.getChangeno() != null && !row.getChangeno().isEmpty() && row.getNo() % 100 != 0 && row.getNo() != 10) {
                     if (!row.getChangeno().equals(oldChangeNo)) {
-                        if (oldChangeNo != "") {
-                            c1 = Util.setCell(s1, condition, TextAlignment.CENTER, false);
-                            c2 = Util.setCell(s2, condition, TextAlignment.CENTER, false);
-                            c3 = Util.setCell(s3, condition, TextAlignment.CENTER, false);
-                            c4 = Util.setCell(s4, condition, TextAlignment.CENTER, false);
-                            c5 = Util.setCell(s5, condition, TextAlignment.CENTER, false);
-                            c6 = Util.setCell(s6, condition, TextAlignment.LEFT, false);
-                            condition = !condition;
-                            table.addCell(c1);
-                            table.addCell(c2);
-                            table.addCell(c3);
-                            table.addCell(c4);
-                            table.addCell(c5);
-                            table.addCell(c6);
+                        if (oldChangeNo != ""){
+                            fillTable(s1, s2, s3, s4, s5, s6, condition, c1, c2, c3, c4, c5, c6, table);
                         }
                         s1 = String.valueOf(row.getChangeno());
                         s2 = Util.parseDate(row.getChangeno());
@@ -143,28 +127,27 @@ public class CreateIntro {
                     }
                 }
             }
-
-            c1 = Util.setCell(s1, condition, TextAlignment.CENTER, false);
-            c2 = Util.setCell(s2, condition, TextAlignment.CENTER, false);
-            c3 = Util.setCell(s3, condition, TextAlignment.CENTER, false);
-            c4 = Util.setCell(s4, condition, TextAlignment.CENTER, false);
-            c5 = Util.setCell(s5, condition, TextAlignment.CENTER, false);
-            c6 = Util.setCell(s6, condition, TextAlignment.LEFT, false);
-            table.addCell(c1);
-            table.addCell(c2);
-            table.addCell(c3);
-            table.addCell(c4);
-            table.addCell(c5);
-            table.addCell(c6);
+            fillTable(s1, s2, s3, s4, s5, s6, condition, c1, c2, c3, c4, c5, c6, table);
         }
         document.add(table);
-
-        int i = document.getPdfDocument().getNumberOfPages();
-        if(i % 2 == 0){
-            document.add(new AreaBreak());
-        }
-        document.close();
+        setEmptyPage(document);
         return dest;
+    }
+
+    private void fillTable(String s1, String s2, String s3, String s4, String s5, String s6, boolean condition,
+                           Cell c1, Cell c2, Cell c3, Cell c4, Cell c5, Cell c6, Table table) {
+        c1 = Util.setCell(s1, condition, TextAlignment.CENTER, false);
+        c2 = Util.setCell(s2, condition, TextAlignment.CENTER, false);
+        c3 = Util.setCell(s3, condition, TextAlignment.CENTER, false);
+        c4 = Util.setCell(s4, condition, TextAlignment.CENTER, false);
+        c5 = Util.setCell(s5, condition, TextAlignment.CENTER, false);
+        c6 = Util.setCell(s6, condition, TextAlignment.LEFT, false);
+        table.addCell(c1);
+        table.addCell(c2);
+        table.addCell(c3);
+        table.addCell(c4);
+        table.addCell(c5);
+        table.addCell(c6);
     }
 
 
@@ -200,13 +183,18 @@ public class CreateIntro {
             }
         }
         document.add(table);
+        setEmptyPage(document);
+        return dest;
+    }
+
+    private void setEmptyPage(Document document) {
         int i = document.getPdfDocument().getNumberOfPages();
         if(i % 2 == 0){
             document.add(new AreaBreak());
         }
         document.close();
-        return dest;
-
     }
+
+
 }
 
