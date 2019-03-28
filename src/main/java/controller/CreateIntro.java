@@ -101,6 +101,7 @@ public class CreateIntro {
                     if (!row.getChangeno().equals(oldChangeNo)) {
                         if (oldChangeNo != ""){
                             fillTable(s1, s2, s3, s4, s5, s6, condition, c1, c2, c3, c4, c5, c6, table);
+                            condition = !condition;
                         }
                         s1 = String.valueOf(row.getChangeno());
                         s2 = Util.parseDate(row.getChangeno());
