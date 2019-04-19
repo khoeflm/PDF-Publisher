@@ -92,4 +92,8 @@ public class ETL {
         });
         return changeNoList;
     }
+
+    public int getPageNum(int chapterNum){
+        return Integer.parseInt(this.getContentMap().get(String.valueOf(chapterNum)).toString());
+    }
 }

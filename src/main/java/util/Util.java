@@ -46,6 +46,7 @@ public class Util {
                     file = file.replace(tempDir.toString(), "");
                     int indexEnd = file.indexOf(".");
                     int indexStart = file.indexOf("/");
+                    // Collect page numbers of the chapter start pages for Table of content
                     contentMap.put(file.substring(indexStart+1, indexEnd), pageNum);
                 }
                 pageNum = pageNum + reader.getNumberOfPages();

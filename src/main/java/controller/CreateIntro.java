@@ -7,6 +7,7 @@ import com.itextpdf.layout.element.*;
 import com.itextpdf.layout.property.TextAlignment;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
+import com.itextpdf.text.pdf.PdfReader;
 import model.ETL;
 import model.ETLRow;
 import util.Localization;
@@ -38,8 +39,11 @@ public class CreateIntro {
         }
         try {
             pdfList.add(loadCover(cover, tempDir.toString()));
-            pdfList.add(loadTOR(etl, tempDir.toString(), localization));
-            pdfList.add(loadTOC(etl, tempDir.toString(), localization));
+            String torDest = loadTOR(etl, tempDir.toString(), localization);
+            pdfList.add(torDest);
+            PdfReader reader = new PdfReader(torDest);
+            int torLength = reader.getNumberOfPages();
+            pdfList.add(loadTOC(etl, tempDir.toString(), localization, torLength));
             Util.merge(pdfList, dest, null, tempDir);
         } catch (DocumentException | IOException e) {
             e.printStackTrace();
@@ -135,24 +139,7 @@ public class CreateIntro {
         return dest;
     }
 
-    private void fillTable(String s1, String s2, String s3, String s4, String s5, String s6, boolean condition,
-                           Cell c1, Cell c2, Cell c3, Cell c4, Cell c5, Cell c6, Table table) {
-        c1 = Util.setCell(s1, condition, TextAlignment.CENTER, false);
-        c2 = Util.setCell(s2, condition, TextAlignment.CENTER, false);
-        c3 = Util.setCell(s3, condition, TextAlignment.CENTER, false);
-        c4 = Util.setCell(s4, condition, TextAlignment.CENTER, false);
-        c5 = Util.setCell(s5, condition, TextAlignment.CENTER, false);
-        c6 = Util.setCell(s6, condition, TextAlignment.LEFT, false);
-        table.addCell(c1);
-        table.addCell(c2);
-        table.addCell(c3);
-        table.addCell(c4);
-        table.addCell(c5);
-        table.addCell(c6);
-    }
-
-
-    private String loadTOC(ETL etl, String tempDir, Localization localization) throws FileNotFoundException {
+    private String loadTOC(ETL etl, String tempDir, Localization localization, int torLength) throws FileNotFoundException {
         String dest = tempDir+"/toc.pdf";
         Document document = Util.createPdf(dest);
         // Creating a Paragraph
@@ -179,7 +166,7 @@ public class CreateIntro {
                 String descr =  row.getDescriptionLine2();
                 descr = descr.replaceAll("\\r", "\r\n");
                 table.addCell(Util.setCell(descr, condition, TextAlignment.LEFT, false).setPaddingLeft(40));
-                table.addCell(Util.setCell(etl.getContentMap().get(String.valueOf(row.getNo())).toString(), condition, TextAlignment.RIGHT, false));
+                table.addCell(Util.setCell( String.valueOf(etl.getPageNum(row.getNo()) + torLength - 1), condition, TextAlignment.RIGHT, false));
                 condition = !condition;
             }
         }
@@ -196,6 +183,21 @@ public class CreateIntro {
         document.close();
     }
 
+    private void fillTable(String s1, String s2, String s3, String s4, String s5, String s6, boolean condition,
+                           Cell c1, Cell c2, Cell c3, Cell c4, Cell c5, Cell c6, Table table) {
+        c1 = Util.setCell(s1, condition, TextAlignment.CENTER, false);
+        c2 = Util.setCell(s2, condition, TextAlignment.CENTER, false);
+        c3 = Util.setCell(s3, condition, TextAlignment.CENTER, false);
+        c4 = Util.setCell(s4, condition, TextAlignment.CENTER, false);
+        c5 = Util.setCell(s5, condition, TextAlignment.CENTER, false);
+        c6 = Util.setCell(s6, condition, TextAlignment.LEFT, false);
+        table.addCell(c1);
+        table.addCell(c2);
+        table.addCell(c3);
+        table.addCell(c4);
+        table.addCell(c5);
+        table.addCell(c6);
+    }
 
 }
 
