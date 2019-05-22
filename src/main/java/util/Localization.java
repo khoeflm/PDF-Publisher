@@ -23,6 +23,7 @@ public class Localization {
     private String descr;
     private String qty;
     private String neu;
+    private String emptyPageText;
 
     public Localization(String lang) throws IOException {
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
@@ -42,6 +43,7 @@ public class Localization {
         qty = langBundle.getString("qty");
         neu = langBundle.getString("neu");
         revision = langBundle.getString("revision");
+        emptyPageText = langBundle.getString("emptyPage");
     }
 
     public String getInhalt() {
@@ -94,6 +96,10 @@ public class Localization {
 
     public String getNeu() {
         return neu;
+    }
+
+    public String getEmptyPageText() {
+        return emptyPageText;
     }
 }
 

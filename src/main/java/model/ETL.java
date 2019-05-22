@@ -56,6 +56,13 @@ public class ETL {
         return list;
     }
 
+    public ETLRow getItem(int index){
+        for (ETLRow row : etl){
+            if(row.getNo()==index) return row;
+        }
+        return null;
+    }
+
     public HashMap getContentMap() {
         return contentMap;
     }

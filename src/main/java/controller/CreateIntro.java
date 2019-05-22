@@ -4,7 +4,9 @@ import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.*;
+import com.itextpdf.layout.property.HorizontalAlignment;
 import com.itextpdf.layout.property.TextAlignment;
+import com.itextpdf.layout.property.VerticalAlignment;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfReader;
@@ -28,32 +30,61 @@ public class CreateIntro {
 
     public String createIntro(ETL etl, Path tempDir, Localization localization) throws ParseException {
         ArrayList<String> pdfList = new ArrayList<>();
-        String dest = tempDir + "/intro.pdf";
-        String cover = null;
+        String dest = tempDir + "/intro.pdf", torDest, prefaceDest;
+        String cover = null, preface = null;
+        int prefacePageCount = 0;
         for (ETLRow row : etl.getEtl()){
-            if (row.getNo()== 10 && row.getItemType() == 'D'){
+            if (row.getNo()== 10 && row.getItemType() == 'D') {
                 int i = row.getDescriptionLine2().lastIndexOf("\\");
-                cover = row.getDescriptionLine2().substring(i+1, row.getDescriptionLine2().length());
-                int x = 1;
+                cover = row.getDescriptionLine2().substring(i + 1);
+            } else if(row.getNo()== 20 && row.getItemType() == 'D') {
+                int j = row.getDescriptionLine2().lastIndexOf("\\");
+                preface = row.getDescriptionLine2().substring(j + 1);
             }
         }
         try {
             pdfList.add(loadCover(cover, tempDir.toString()));
-            String torDest = loadTOR(etl, tempDir.toString(), localization);
+            if(preface != null) {
+                prefaceDest = loadPreface(preface, tempDir.toString());
+                if (prefaceDest != null) {
+                    pdfList.add(prefaceDest);
+                    PdfReader readerPreface = new PdfReader(prefaceDest);
+                    prefacePageCount = readerPreface.getNumberOfPages();
+                    if (prefacePageCount % 2 != 0){
+                        String emptyPage = tempDir +"/empty.pdf";
+                        Document document = Util.createPdf(emptyPage);
+                        Paragraph empty = new Paragraph(localization.getEmptyPageText());
+                        empty.setVerticalAlignment(VerticalAlignment.MIDDLE);
+                        empty.setHorizontalAlignment(HorizontalAlignment.CENTER);
+                        document.add(empty);
+                        document.close();
+                        pdfList.add(emptyPage);
+                        prefacePageCount++;
+
+                    }
+                }
+            }
+            torDest = loadTOR(etl, tempDir.toString(), localization);
             pdfList.add(torDest);
-            PdfReader reader = new PdfReader(torDest);
-            int torLength = reader.getNumberOfPages();
-            pdfList.add(loadTOC(etl, tempDir.toString(), localization, torLength));
+            PdfReader readerTOR = new PdfReader(torDest);
+            int introLength = readerTOR.getNumberOfPages() + prefacePageCount;
+            pdfList.add(loadTOC(etl, tempDir.toString(), localization, introLength));
             Util.merge(pdfList, dest, null, tempDir);
         } catch (DocumentException | IOException e) {
             e.printStackTrace();
         }
         return dest;
-
     }
 
+    public String createBackpage(ETLRow row, Path tempDir) throws ParseException{
+        int i = row.getDescriptionLine2().lastIndexOf("\\");
+        String backpage = row.getDescriptionLine2().substring(i + 1);
+        return tempDir + "/" + backpage;
+    }
+
+
     private String loadCover(String coverName, String tempDir) throws FileNotFoundException, MalformedURLException {
-        String fileformat = coverName.substring(coverName.length()-3,coverName.length());
+        String fileformat = coverName.substring(coverName.length()-3);
         if(fileformat.equalsIgnoreCase("pdf")) {
             return tempDir +"/"+ coverName;
         } else if(fileformat.equalsIgnoreCase("jpg")){
@@ -70,6 +101,14 @@ public class CreateIntro {
             return dest;
         }
         return tempDir + "/" +coverName;
+    }
+
+    private String loadPreface(String preface, String tempDir) {
+        String fileformat = preface.substring(preface.length()-3);
+        if(fileformat.equalsIgnoreCase("pdf")) {
+            return tempDir +"/"+ preface;
+        }
+        return null;
     }
 
     private String loadTOR(ETL etl, String tempDir, Localization localization) throws FileNotFoundException {
@@ -137,7 +176,7 @@ public class CreateIntro {
             }
         }
         document.add(table);
-        setEmptyPage(document);
+        setEmptyPage(document, localization);
         return dest;
     }
 
@@ -173,14 +212,18 @@ public class CreateIntro {
             }
         }
         document.add(table);
-        setEmptyPage(document);
+        setEmptyPage(document, localization);
         return dest;
     }
 
-    private void setEmptyPage(Document document) {
+    private void setEmptyPage(Document document, Localization localization) {
         int i = document.getPdfDocument().getNumberOfPages();
         if(i % 2 == 0){
             document.add(new AreaBreak());
+            Paragraph emptyPage = new Paragraph(localization.getEmptyPageText());
+            emptyPage.setVerticalAlignment(VerticalAlignment.MIDDLE);
+            emptyPage.setHorizontalAlignment(HorizontalAlignment.CENTER);
+            document.add(emptyPage);
         }
         document.close();
     }

@@ -56,7 +56,8 @@ public class PublishController implements ActionListener {
         }
 
         for(ETLRow documentRow : etl.getEtl()){
-            if((documentRow.getNo() == 10 || documentRow.getNo() % 100 == 0) && documentRow.getItemType() == 'D'){
+            if((documentRow.getNo() == 10 || documentRow.getNo() == 20 || documentRow.getNo() == 9999
+                    || documentRow.getNo() % 100 == 0) && documentRow.getItemType() == 'D'){
                 String fullDocPath = documentRow.getDescriptionLine2();
                 int fileNameIndex = fullDocPath.lastIndexOf('\\');
                 String docFileName = documentRow.getDescriptionLine2().substring(fileNameIndex+1);
@@ -82,7 +83,7 @@ public class PublishController implements ActionListener {
         if (error == 0) {
             CreateChapter cc = new CreateChapter();
             ArrayList chapterItems = new ArrayList();
-            for (int i = 100; i <= 9999; i++) {
+            for (int i = 100; i < 9999; i++) {
                 if (i != 100 && i % 100 == 0) {
                     try {
                         pdfList.add(cc.createChapter(chapterItems, tempDir, localization, scaleFactor, view));
@@ -106,9 +107,17 @@ public class PublishController implements ActionListener {
             try {
                 pdfList.add(ci.createIntro(etl, tempDir, localization));
             } catch (ParseException e) {
-                view.setErrorText("Fehler beim Erstellen der Einleitung");
+                view.setErrorText("Fehler beim Erstellen der Einleitung.");
             }
             pdfList.add(tempDir + "/helper.pdf");
+            try {
+                if (etl.getItem(9999) != null) {
+                    ETLRow row = etl.getItem(9999);
+                    pdfList.add(ci.createBackpage(row, tempDir));
+                }
+            } catch(Exception e){
+                view.setErrorText("Fehler beim Ermitteln der Rückseite.");
+            }
             try {
                 Util.merge(pdfList, tempDir + "/helper2.pdf", null, tempDir);
             } catch (IOException | DocumentException e) {
@@ -138,7 +147,7 @@ public class PublishController implements ActionListener {
             if(fileIsValid(inputFile.getName())) {
                 try {
                     this.localization = new Localization(view.getcLang().getSelectedItem().toString());
-                    publish();
+                        publish();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
