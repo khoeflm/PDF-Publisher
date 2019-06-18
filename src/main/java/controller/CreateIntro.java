@@ -50,7 +50,7 @@ public class CreateIntro {
                     pdfList.add(prefaceDest);
                     PdfReader readerPreface = new PdfReader(prefaceDest);
                     prefacePageCount = readerPreface.getNumberOfPages();
-                    if (prefacePageCount % 2 != 0){
+                    if (prefacePageCount % 2 == 0){
                         String emptyPage = tempDir +"/empty.pdf";
                         Document document = Util.createPdf(emptyPage);
                         Paragraph empty = new Paragraph(localization.getEmptyPageText());

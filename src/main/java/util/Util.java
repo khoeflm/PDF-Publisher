@@ -112,7 +112,7 @@ public class Util {
         int totalPages = readerFinal.getNumberOfPages();
         PdfStamper stamp = new PdfStamper(readerFinal, new FileOutputStream(baseDir +"/"+ etlNo +".pdf"));
         PdfContentByte over;
-        for (int i = 1; i <= totalPages; i++) {
+        for (int i = 1; i < totalPages; i++) {
             if(i!=1) {
                 over = stamp.getOverContent(i);
                 DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
